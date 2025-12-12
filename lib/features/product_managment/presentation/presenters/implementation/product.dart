@@ -1,21 +1,40 @@
+import 'dart:convert';
 import 'dart:developer';
+import 'dart:js_interop';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
-import '../../../data/models/product.dart';
+import 'package:http/http.dart' as http;
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:web/web.dart' as web;
+import '../../../../../core/app/app_routes.dart';
+import '../../../data/models/csv_template/index.dart';
+import '../../../../auth/data/datasources/auth_cache.dart';
+import '../../../../auth/data/models/user_auth/user_auth_model.dart';
+import '../../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
+import '../../../data/models/barcode/index.dart';
+import '../../../utils/filename_extractor.dart';
+import '../../../../../utils/helpers/snackbar_service.dart';
 import '../../controllers/interface/product.dart';
 import '../interface/product.dart';
 
 class ProductsPresenterImpl extends GetxController
     implements ProductsPresenterInterface {
-  final ProductsControllerInterface _controller;
+  final ProductsControllerInterface controller;
+  final DashboardShellControllerInterface dashboardShellController;
 
-  ProductsPresenterImpl(this._controller);
+  ProductsPresenterImpl({
+    required this.controller,
+    required this.dashboardShellController,
+  });
 
   // Observable properties
-  final RxList<ProductModel> _products = <ProductModel>[].obs;
-  final RxList<ProductModel> _filteredProducts = <ProductModel>[].obs;
+  final RxList<BarcodeResultModel> _products = <BarcodeResultModel>[].obs;
+  final RxList<BarcodeResultModel> _filteredProducts =
+      <BarcodeResultModel>[].obs;
   final RxList<String> _categories = <String>[].obs;
   final RxString _selectedCategory = ''.obs;
   final RxBool _isLoading = false.obs;
@@ -32,7 +51,8 @@ class ProductsPresenterImpl extends GetxController
   final RxList<String> _formCategories = <String>[].obs;
   final RxBool _isFormValid = false.obs;
   final RxBool _isCreating = false.obs;
-  final Rx<ProductModel?> _editingProduct = Rx<ProductModel?>(null);
+  final Rx<BarcodeResultModel?> _editingProduct = Rx<BarcodeResultModel?>(null);
+  final _user = Rxn<UserAuthModel>();
 
   // Mobile preview properties
   final RxString _previewTitle = ''.obs;
@@ -57,6 +77,9 @@ class ProductsPresenterImpl extends GetxController
   final RxString _editItemTitle = ''.obs;
   final RxString _editItemBarcode = ''.obs;
 
+  // Barcode controller for single barcode input
+  late final TextEditingController _barcodeController;
+
   // Text controllers for new item inputs
   late final TextEditingController _newItemTitleController;
   late final TextEditingController _newItemBarcodeController;
@@ -64,6 +87,60 @@ class ProductsPresenterImpl extends GetxController
   // Text controllers for edit item inputs
   late final TextEditingController _editItemTitleController;
   late final TextEditingController _editItemBarcodeController;
+
+  // New properties for improvements
+  late final RxString _viewMode;
+
+  final RxString _currentRoute = AppRoutes.productManagement.obs;
+  
+  // CSV upload dialog state
+  final RxString _csvFileName = ''.obs;
+  final RxString _csvFilePath = ''.obs;
+  final Rx<Uint8List?> _csvFileBytes = Rx<Uint8List?>(null);
+  final RxBool _isCsvUploading = false.obs;
+  final RxBool _isDownloadingTemplate = false.obs;
+  final RxBool _hasDownloadedTemplate = false.obs;
+  final RxBool _hasSelectedCsvFile = false.obs;
+
+  // Track original files from API to preserve filenames during editing
+  final RxList<BarcodeResultFileModel> _originalFiles =
+      <BarcodeResultFileModel>[].obs;
+  
+  // Image conversion loading states
+  final RxBool _isConvertingHeaderImage = false.obs;
+  final RxBool _isConvertingCarouselImage = false.obs;
+  final RxBool _isConvertingRecyclingImage = false.obs;
+  
+  // Computed save button state
+  late final RxBool _canSaveProduct;
+  
+  // Pagination properties
+  final RxInt _currentPage = 1.obs;
+  final RxInt _totalCount = 0.obs;
+  final RxBool _hasNextPage = false.obs;
+  final RxInt _perPage = 10.obs;
+
+  @override
+  late GlobalKey<ScaffoldState> scaffoldKey;
+  @override
+  late RxString currentRoute = _currentRoute;
+  @override
+  void onNavigate(String value) =>
+      dashboardShellController.handleMobileNavigation(value);
+  @override
+  void onLogout() => dashboardShellController.logout();
+  @override
+  void onToggle() => dashboardShellController.toggleSidebar();
+  
+  // Pagination getters
+  @override
+  RxInt get currentPage => _currentPage;
+  @override
+  RxInt get totalCount => _totalCount;
+  @override
+  RxBool get hasNextPage => _hasNextPage;
+  @override
+  RxInt get perPage => _perPage;
 
   // Add getters:
   @override
@@ -85,9 +162,9 @@ class ProductsPresenterImpl extends GetxController
 
   // Getters
   @override
-  RxList<ProductModel> get products => _products;
+  RxList<BarcodeResultModel> get products => _products;
   @override
-  RxList<ProductModel> get filteredProducts => _filteredProducts;
+  RxList<BarcodeResultModel> get filteredProducts => _filteredProducts;
   @override
   RxList<String> get categories => _categories;
   @override
@@ -111,7 +188,7 @@ class ProductsPresenterImpl extends GetxController
   @override
   RxBool get isCreating => _isCreating;
   @override
-  Rx<ProductModel?> get editingProduct => _editingProduct;
+  Rx<BarcodeResultModel?> get editingProduct => _editingProduct;
   @override
   RxString get previewTitle => _previewTitle;
   @override
@@ -128,6 +205,14 @@ class ProductsPresenterImpl extends GetxController
   RxString get newItemTitle => _newItemTitle;
   @override
   RxString get newItemBarcode => _newItemBarcode;
+  @override
+  UserAuthModel? get user => _user.value;
+
+  // Barcode controller for single barcode input
+  @override
+  TextEditingController get barcodeController => _barcodeController;
+
+  // Controllers for new item inputs
   @override
   TextEditingController get newItemTitleController => _newItemTitleController;
   @override
@@ -148,16 +233,70 @@ class ProductsPresenterImpl extends GetxController
       _editItemBarcodeController;
 
   @override
+  RxString get viewMode => _viewMode;
+  
+  // CSV upload dialog getters
+  @override
+  RxString? get csvFileName => _csvFileName;
+  @override
+  RxString? get csvFilePath => _csvFilePath;
+  @override
+  Rx<Uint8List?> get csvFileBytes => _csvFileBytes;
+  @override
+  RxBool get isCsvUploading => _isCsvUploading;
+  @override
+  RxBool get isDownloadingTemplate => _isDownloadingTemplate;
+  @override
+  RxBool get hasDownloadedTemplate => _hasDownloadedTemplate;
+  @override
+  RxBool get hasSelectedCsvFile => _hasSelectedCsvFile;
+
+  // Image conversion loading state getters
+  @override
+  RxBool get isConvertingHeaderImage => _isConvertingHeaderImage;
+  @override
+  RxBool get isConvertingCarouselImage => _isConvertingCarouselImage;
+  @override
+  RxBool get isConvertingRecyclingImage => _isConvertingRecyclingImage;
+  
+  // Computed getter for save button disable logic
+  @override
+  RxBool get canSaveProduct => _canSaveProduct;
+
+  @override
   void onInit() {
     super.onInit();
 
+    loadUser();
+
+    scaffoldKey = dashboardShellController.scaffoldKey;
+    dashboardShellController.currentRoute.value = currentRoute.value;
+
+    // Initialize view mode based on screen size
+    _initializeViewMode();
+
+    // Initialize computed save button state
+    _canSaveProduct = false.obs;
+    _updateCanSaveProduct();
+
     // Initialize text controllers
+    _barcodeController = TextEditingController();
     _newItemTitleController = TextEditingController();
     _newItemBarcodeController = TextEditingController();
     _editItemTitleController = TextEditingController();
     _editItemBarcodeController = TextEditingController();
 
     // Setup listeners for reactive updates
+    _barcodeController.addListener(() {
+      // Prevent infinite loops by checking if values are different
+      if (_formBarcode.value != _barcodeController.text) {
+        _formBarcode.value = _barcodeController.text;
+        updatePreview();
+        _validateForm();
+        log('Barcode controller updated: ${_barcodeController.text}');
+      }
+    });
+
     _newItemTitleController.addListener(() {
       _newItemTitle.value = _newItemTitleController.text;
     });
@@ -175,18 +314,27 @@ class ProductsPresenterImpl extends GetxController
     });
 
     loadProducts();
-    _categories.addAll(_controller.getAllCategories());
+    _categories.addAll(controller.getAllCategories());
 
     // Setup form validation for fields that might be updated directly
     ever(_formTitle, (_) => _validateForm());
     ever(_formBrand, (_) => _validateForm());
     ever(_formDescription, (_) => _validateForm());
+    ever(_formBarcode, (_) => _validateForm());
+    ever(_formCategories, (_) => _validateForm());
+    // Images are now optional, so no validation triggers needed for images
+    // Legacy fields still monitored for compatibility
     ever(_formHeaderImage, (_) => _validateForm());
     ever(_formImage, (_) => _validateForm());
-    ever(_formBarcode, (_) => _validateForm());
     ever(_formItems, (_) => _validateForm());
-    ever(_formCategories, (_) => _validateForm());
     ever(_formItems, (_) => updatePreview());
+
+    // Setup reactive listeners for loading states to update canSaveProduct
+    ever(_isConvertingHeaderImage, (_) => _updateCanSaveProduct());
+    ever(_isConvertingCarouselImage, (_) => _updateCanSaveProduct());
+    ever(_isConvertingRecyclingImage, (_) => _updateCanSaveProduct());
+    ever(_isLoading, (_) => _updateCanSaveProduct());
+    ever(_isFormValid, (_) => _updateCanSaveProduct());
 
     // Setup real-time preview updates for fields that might be updated directly
     ever(_formTitle, (_) => updatePreview());
@@ -202,6 +350,7 @@ class ProductsPresenterImpl extends GetxController
 
   @override
   void onClose() {
+    _barcodeController.dispose();
     _newItemTitleController.dispose();
     _newItemBarcodeController.dispose();
     _editItemTitleController.dispose();
@@ -209,16 +358,106 @@ class ProductsPresenterImpl extends GetxController
     super.onClose();
   }
 
+  Future<void> loadUser() async {
+    try {
+      final user = await AuthCacheDataSource.instance.getUserAuth();
+      _user.value = user;
+    } catch (e) {
+      log(e.toString());
+    }
+  }
+
+  Future<String> fetchImageAsBase64(String imageUrl) async {
+    try {
+      // Use Corsfix CORS proxy - free for development with 60 requests/minute
+      final corsProxyUrl = 'https://proxy.corsfix.com/?$imageUrl';  
+
+      final response = await http.get(Uri.parse(corsProxyUrl));
+
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+        final base64String = base64Encode(bytes);
+        return 'data:image/jpeg;base64,$base64String';
+      } else {
+        throw Exception('Failed to load image: ${response.statusCode}');
+      }
+    } catch (e) {
+      log('Error fetching image as base64: $e');
+      // Return original URL as fallback
+      return imageUrl;
+    }
+  }
+
   @override
   Future<void> loadProducts() async {
     _isLoading.value = true;
     try {
-      final productList = await _controller.getAllProducts();
+      final result = await controller.getProducts(
+        perPage: _perPage.value,
+        page: _currentPage.value,
+      );
+      
+      // Update pagination state with safety checks
+      if (result.pagination != null) {
+        _totalCount.value = result.pagination!.count ?? 0;
+        _hasNextPage.value = result.pagination!.hasNext ?? false;
+        _perPage.value = result.pagination!.perPage ?? 10;
+        
+        // Calculate safe current page to prevent state inconsistency
+        final apiPage = result.pagination!.page ?? 1;
+        final calculatedTotalPages = _totalCount.value > 0 
+          ? ((_totalCount.value / _perPage.value).ceil()) 
+          : 1;
+        
+        // Ensure current page is within valid range
+        _currentPage.value = apiPage.clamp(1, calculatedTotalPages);
+        
+        log('[ProductsPresenterImpl] Pagination updated - Page: ${_currentPage.value}/$calculatedTotalPages, Count: ${_totalCount.value}');
+      }
+      
+      // Update products
+      final productList = result.result ?? <BarcodeResultModel>[];
       _products.assignAll(productList);
+
+      // Use regular for loop instead of forEach
+      for (var product in _products) {
+        if (product.files != null) {
+          for (var file in product.files!) {
+            if (file.url != null) {
+              try {
+                log('[before] fetching image as base64: ${file.url}');
+                // file.url = await fetchImageAsBase64(file.url!);
+                log('[after] fetching image as base64 success');
+              } catch (e) {
+                log('[error] fetching image as base64: $e');
+              }
+            }
+          }
+        }
+      }
+
       _filteredProducts.assignAll(productList);
+    } catch (e) {
+      log('[ProductsPresenterImpl] Error loading products: $e');
+      // Error handling is done by the controller
     } finally {
       _isLoading.value = false;
     }
+  }
+  
+  @override
+  Future<void> goToPage(int page) async {
+    if (page != _currentPage.value && page > 0) {
+      _currentPage.value = page;
+      await loadProducts();
+    }
+  }
+  
+  
+  @override
+  Future<void> refreshProducts() async {
+    _currentPage.value = 1;
+    await loadProducts();
   }
 
   @override
@@ -233,12 +472,19 @@ class ProductsPresenterImpl extends GetxController
     _applyFilters();
   }
 
+  void _initializeViewMode() {
+    // Set default view mode based on screen size
+    final screenWidth = Get.width;
+    final isMobileOrTablet = screenWidth < 1200;
+    _viewMode = (isMobileOrTablet ? 'list' : 'grid').obs;
+  }
+
   void _applyFilters() {
     var filtered = _products.toList();
 
     // Filter by category
     if (_selectedCategory.value.isNotEmpty) {
-      filtered = _controller.filterProductsByCategory(_selectedCategory.value);
+      filtered = controller.filterProductsByCategory(_selectedCategory.value);
     }
 
     // Filter by search query
@@ -247,13 +493,15 @@ class ProductsPresenterImpl extends GetxController
           filtered
               .where(
                 (product) =>
-                    product.title.toLowerCase().contains(
-                      _searchQuery.value.toLowerCase(),
-                    ) ||
-                    product.description.toLowerCase().contains(
-                      _searchQuery.value.toLowerCase(),
-                    ) ||
-                    product.barcode.contains(_searchQuery.value),
+                    (product.name?.toLowerCase().contains(
+                          _searchQuery.value.toLowerCase(),
+                        ) ??
+                        false) ||
+                    (product.instructions?.toLowerCase().contains(
+                          _searchQuery.value.toLowerCase(),
+                        ) ??
+                        false) ||
+                    (product.code?.contains(_searchQuery.value) ?? false),
               )
               .toList();
     }
@@ -271,19 +519,42 @@ class ProductsPresenterImpl extends GetxController
   }
 
   @override
-  void startEdit(ProductModel product) {
+  void startEdit(BarcodeResultModel product) {
     _editingProduct.value = product;
     _isCreating.value = true;
-    _formTitle.value = product.title;
-    _formBrand.value = product.brand;
-    _formDescription.value = product.description;
-    _formHeaderImage.value = product.headerImage;
-    _formCarouselImages.assignAll(product.carouselImage);
-    _formRecyclingImage.value = ''; // For now, no recycling image in the model
-    _formBarcode.value = product.barcode;
-    _formItems.assignAll(product.items);
-    _formCategories.assignAll(product.category);
-    _formLinkedRewards.assignAll(product.linkedRewards);
+    _formTitle.value = product.name ?? '';
+    _formBrand.value = product.brand ?? '';
+    _formDescription.value = product.instructions ?? '';
+    _formHeaderImage.value = product.headerImage ?? '';
+    _formCarouselImages.assignAll(product.carouselImages);
+    _formRecyclingImage.value = product.productDetailsImage ?? '';
+
+    // Store original files to preserve filenames from API
+    _originalFiles.clear();
+    if (product.files != null) {
+      _originalFiles.addAll(product.files!);
+      log(
+        'Edit started: preserved ${_originalFiles.length} original files with filenames',
+      );
+    }
+
+    // Sync both barcode state and controller for editing
+    _formBarcode.value = product.code ?? '';
+    _barcodeController.text = product.code ?? '';
+
+    // Handle items - since new model doesn't have items, initialize empty
+    _formItems.clear();
+
+    // Handle categories - new model uses trashType as single string
+    _formCategories.clear();
+    if (product.trashType != null) {
+      _formCategories.add(product.trashType!);
+    }
+
+    // Handle linked rewards - not in new model, initialize empty
+    _formLinkedRewards.clear();
+
+    log('Edit started: barcode set to ${product.code}');
     updatePreview();
   }
 
@@ -319,10 +590,21 @@ class ProductsPresenterImpl extends GetxController
         break;
       case 'barcode':
         _formBarcode.value = value.toString();
+        // Sync controller if values are different to prevent conflicts
+        if (_barcodeController.text != value.toString()) {
+          _barcodeController.text = value.toString();
+        }
         break;
       case 'categories':
         if (value is List<String>) {
           _formCategories.assignAll(value);
+        }
+        break;
+      case 'category':
+        // Handle single category selection for trashType
+        _formCategories.clear();
+        if (value != null && value.toString().isNotEmpty) {
+          _formCategories.add(value.toString());
         }
         break;
       case 'linkedRewards':
@@ -338,49 +620,80 @@ class ProductsPresenterImpl extends GetxController
 
   @override
   Future<void> saveProduct() async {
-    if (!_isFormValid.value) return;
+    if (!_isFormValid.value) {
+      // Show specific validation message to help user understand what's missing
+      SnackbarServiceHelper.showWarning(
+        validationMessage,
+        position: SnackPosition.BOTTOM,
+      );
+      return;
+    }
 
     _isLoading.value = true;
-    try {
-      final product = ProductModel(
-        id: _editingProduct.value?.id ?? 0,
-        title: _formTitle.value,
-        brand: _formBrand.value,
-        description: _formDescription.value,
-        headerImage: _formHeaderImage.value,
-        carouselImage: _formCarouselImages.toList(),
-        items: _formItems.toList(),
-        barcode: _formBarcode.value,
-        category: _formCategories.toList(),
-        createdAt: _editingProduct.value?.createdAt ?? DateTime.now(),
-        updatedAt: DateTime.now(),
-        linkedRewards: _formLinkedRewards.toList(),
+    
+    // Show notification that conversion is starting (especially for multiple images)
+    if (_formHeaderImage.value.isNotEmpty || 
+        _formCarouselImages.isNotEmpty || 
+        _formRecyclingImage.value.isNotEmpty) {
+      SnackbarServiceHelper.showInfo(
+        'Processing images and saving product, please wait...',
+        position: SnackPosition.BOTTOM,
       );
+    }
+    
+    try {
+      // Create uploadFiles list following ImageDisplayHelper business rules
+      List<BarcodeResultFileModel> uploadFiles = [];
 
-      bool success;
-      if (_editingProduct.value != null) {
-        success = await _controller.updateProduct(product);
-      } else {
-        success = await _controller.createProduct(product);
+      // Add header image first (if provided)
+      if (_formHeaderImage.value.isNotEmpty) {
+        uploadFiles.add(_createFileModel(_formHeaderImage.value));
       }
 
-      if (success) {
-        Get.snackbar(
-          'Success',
-          _editingProduct.value != null
-              ? 'Product updated successfully'
-              : 'Product created successfully',
-          snackPosition: SnackPosition.TOP,
-        );
+      // Add carousel images in the middle
+      for (String carouselImage in _formCarouselImages) {
+        if (carouselImage.isNotEmpty) {
+          uploadFiles.add(_createFileModel(carouselImage));
+        }
+      }
+
+      // Add recycling image last (if provided and different from existing images)
+      if (_formRecyclingImage.value.isNotEmpty &&
+          !uploadFiles.any((file) => file.url == _formRecyclingImage.value)) {
+        uploadFiles.add(_createFileModel(_formRecyclingImage.value));
+      }
+
+      // Create product with new API-compatible structure
+      final product = BarcodeResultModel(
+        id: _editingProduct.value?.id,
+        name: _formTitle.value.isNotEmpty ? _formTitle.value : null,
+        code: _formBarcode.value.isNotEmpty ? _formBarcode.value : null,
+        brand: _formBrand.value.isNotEmpty ? _formBrand.value : null,
+        instructions:
+            _formDescription.value.isNotEmpty ? _formDescription.value : null,
+        trashType: _formCategories.isNotEmpty ? _formCategories.first : null,
+        files: uploadFiles.isNotEmpty ? uploadFiles : null,
+      );
+
+      try {
+        if (_editingProduct.value != null) {
+          // Update existing product
+          await controller.updateProduct(
+            _editingProduct.value!.id.toString(),
+            product,
+          );
+        } else {
+          // Create new product
+          await controller.createProduct(product);
+        }
+
+        // Success handling is done in controller
         await loadProducts();
         _isCreating.value = false;
         cancelEdit();
-      } else {
-        Get.snackbar(
-          'Error',
-          'Failed to save product',
-          snackPosition: SnackPosition.TOP,
-        );
+      } catch (e) {
+        // Error handling is done in controller
+        log('[ProductsPresenterImpl] Save product error: $e');
       }
     } finally {
       _isLoading.value = false;
@@ -389,26 +702,33 @@ class ProductsPresenterImpl extends GetxController
 
   @override
   Future<void> deleteProduct(int id) async {
-    _isLoading.value = true;
     try {
-      final success = await _controller.deleteProduct(id);
-      if (success) {
-        Get.snackbar(
-          'Success',
-          'Product deleted successfully',
-          snackPosition: SnackPosition.TOP,
-        );
-        await loadProducts();
-      } else {
-        Get.snackbar(
-          'Error',
-          'Failed to delete product',
-          snackPosition: SnackPosition.TOP,
-        );
+      // Store current state for recovery if needed
+      final currentPageBeforeDeletion = _currentPage.value;
+      final totalCountBeforeDeletion = _totalCount.value;
+      
+      log('[ProductsPresenterImpl] Deleting product $id - Current page: $currentPageBeforeDeletion, Total: $totalCountBeforeDeletion');
+      
+      // Use the new API method
+      await controller.deleteProduct(id.toString());
+      
+      // Check if we need to adjust current page after deletion
+      // If we were on the last page and it might become empty, go to previous page
+      final estimatedNewTotal = totalCountBeforeDeletion - 1;
+      final estimatedNewTotalPages = estimatedNewTotal > 0 
+        ? ((estimatedNewTotal / _perPage.value).ceil()) 
+        : 1;
+      
+      if (currentPageBeforeDeletion > estimatedNewTotalPages && estimatedNewTotalPages > 0) {
+        _currentPage.value = estimatedNewTotalPages;
+        log('[ProductsPresenterImpl] Adjusted current page to $estimatedNewTotalPages after deletion');
       }
-    } finally {
-      _isLoading.value = false;
-    }
+      
+      await loadProducts();
+    } catch (e) {
+      // Error handling is now done in the controller
+      log('[ProductsPresenterImpl] Delete product error: $e');
+    } 
   }
 
   @override
@@ -424,24 +744,43 @@ class ProductsPresenterImpl extends GetxController
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
+        withData: true, // Important for web to get bytes
       );
 
       if (result != null) {
-        final filePath = result.files.single.path!;
-        final imageUrl = await _controller.uploadImage(filePath);
+        final file = result.files.single;
+        String imageUrl;
+        
+        if (kIsWeb) {
+          // On web, use bytes directly
+          if (file.bytes != null) {
+            imageUrl = await controller.uploadImageWithBytes(
+              file.bytes!,
+              file.name,
+            );
+          } else {
+            throw Exception('Failed to get file bytes on web');
+          }
+        } else {
+          // On mobile/desktop, use file path
+          if (file.path != null) {
+            imageUrl = await controller.uploadImage(file.path!);
+          } else {
+            throw Exception('Failed to get file path');
+          }
+        }
+        
         _formHeaderImage.value = imageUrl;
-        Get.snackbar(
-          'Success',
-          'Header image uploaded successfully',
-          snackPosition: SnackPosition.TOP,
-        );
+        controller.showSuccess('Header image uploaded successfully');
       }
     } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to upload image',
-        snackPosition: SnackPosition.TOP,
-      );
+      // Only show error if it's a client-side error
+      // HTTP errors are already handled by HttpService
+      if (!e.toString().contains('401') && !e.toString().contains('400') && 
+          !e.toString().contains('404') && !e.toString().contains('500') &&
+          !e.toString().contains('UnsupportedError')) {
+        controller.showError('Failed to process image file');
+      }
     }
   }
 
@@ -457,12 +796,39 @@ class ProductsPresenterImpl extends GetxController
             : _formDescription.value;
     // Update to use the new image field structure
     _previewImage.value = _formHeaderImage.value;
-    if (_formItems.isNotEmpty) {
-      _previewBarcode.value = _formItems.first['barcode'] ?? '0000000000000';
-    } else {
-      _previewBarcode.value = '0000000000000';
-    }
+    // Use direct barcode field instead of items
+    _previewBarcode.value =
+        _formBarcode.value.isEmpty ? '0000000000000' : _formBarcode.value;
     _previewCategories.assignAll(_formCategories);
+
+    log('Preview updated: barcode=${_previewBarcode.value}');
+  }
+
+  /// Creates a BarcodeResultFileModel with proper filename handling
+  /// Preserves original filenames from API or generates new ones for uploads
+  BarcodeResultFileModel _createFileModel(String url) {
+    // Check if this URL matches an original file (preserves API filenames)
+    final originalFile = _originalFiles.firstWhereOrNull(
+      (file) => file.url == url,
+    );
+
+    if (originalFile != null) {
+      log(
+        '[ProductsPresenterImpl] Using original file with filename: ${originalFile.fileName}',
+      );
+      return originalFile;
+    }
+
+    // This is a new upload, generate filename
+    final fileData = FilenameExtractor.createFileModelData(url: url);
+    log(
+      '[ProductsPresenterImpl] Created new file model with generated filename: ${fileData['fileName']}',
+    );
+
+    return BarcodeResultFileModel(
+      url: fileData['url'],
+      fileName: fileData['fileName'],
+    );
   }
 
   void _clearForm() {
@@ -478,16 +844,98 @@ class ProductsPresenterImpl extends GetxController
     _formLinkedRewards.clear();
     _formItems.clear();
     _isAddingItem.value = false;
+
+    // Clear original files tracking
+    _originalFiles.clear();
+
+    // Clear all text controllers to prevent UI state persistence
+    _barcodeController.clear();
+    _newItemTitleController.clear();
+    _newItemBarcodeController.clear();
+    _editItemTitleController.clear();
+    _editItemBarcodeController.clear();
+
+    log('Form cleared: barcode controller and reactive variables reset');
   }
 
   void _validateForm() {
-    _isFormValid.value =
-        _formTitle.value.isNotEmpty &&
-        _formBrand.value.isNotEmpty &&
-        _formDescription.value.isNotEmpty &&
-        _formHeaderImage.value.isNotEmpty &&
-        _formCategories.isNotEmpty &&
-        _formItems.isNotEmpty;
+    // Enhanced validation: Check all required fields
+    final isTitleValid = _formTitle.value.trim().isNotEmpty;
+    final isBrandValid = _formBrand.value.trim().isNotEmpty;
+    final isDescriptionValid = _formDescription.value.trim().isNotEmpty;
+    final isBarcodeValid = _formBarcode.value.trim().isNotEmpty;
+    final isCategoryValid = _formCategories.isNotEmpty;
+    
+    // Images are now optional - no image requirements
+    
+    _isFormValid.value = isTitleValid &&
+                        isBrandValid &&
+                        isDescriptionValid &&
+                        isBarcodeValid &&
+                        isCategoryValid;
+
+    log(
+      'Enhanced form validation: '
+      'title=$isTitleValid, '
+      'brand=$isBrandValid, '
+      'description=$isDescriptionValid, '
+      'barcode=$isBarcodeValid, '
+      'category=$isCategoryValid (${_formCategories.isNotEmpty ? _formCategories.first : 'none'}), '
+      'isValid=${_isFormValid.value}',
+    );
+  }
+
+  void _updateCanSaveProduct() {
+    final canSave = !_isConvertingHeaderImage.value && 
+                    !_isConvertingCarouselImage.value && 
+                    !_isConvertingRecyclingImage.value &&
+                    !_isLoading.value &&
+                    _isFormValid.value;
+    _canSaveProduct.value = canSave;
+    
+    log('Can save product: $canSave (converting: ${_isConvertingHeaderImage.value || _isConvertingCarouselImage.value || _isConvertingRecyclingImage.value}, loading: ${_isLoading.value}, valid: ${_isFormValid.value})');
+  }
+
+  // Enhanced validation getters for individual field validation
+  @override
+  bool get isTitleValid => _formTitle.value.trim().isNotEmpty;
+
+  @override
+  bool get isBrandValid => _formBrand.value.trim().isNotEmpty;
+
+  @override
+  bool get isDescriptionValid => _formDescription.value.trim().isNotEmpty;
+
+  @override
+  bool get isBarcodeValid => _formBarcode.value.trim().isNotEmpty;
+
+  @override
+  bool get isCategoryValid => _formCategories.isNotEmpty;
+
+  @override
+  bool get hasRequiredImages {
+    // Images are now optional, so this always returns true
+    return true;
+  }
+
+  @override
+  String get validationMessage {
+    final missingFields = <String>[];
+    
+    if (!isTitleValid) missingFields.add('Product Title');
+    if (!isBrandValid) missingFields.add('Brand');
+    if (!isDescriptionValid) missingFields.add('Description');
+    if (!isBarcodeValid) missingFields.add('Barcode');
+    if (!isCategoryValid) missingFields.add('Category');
+    // Removed image requirement from validation message
+    
+    if (missingFields.isEmpty) {
+      return 'All required fields are filled';
+    } else if (missingFields.length == 1) {
+      return 'Missing: ${missingFields.first}';
+    } else {
+      return 'Missing: ${missingFields.join(', ')}';
+    }
   }
 
   // Item management methods
@@ -670,31 +1118,77 @@ class ProductsPresenterImpl extends GetxController
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
+        withData: true, // Important for web to get bytes
       );
 
       if (result != null) {
         log('📁 File selected: ${result.files.single.name}');
-        final filePath = result.files.single.path!;
-        final imageUrl = await _controller.uploadImage(filePath);
-        log('🌐 Image URL received: $imageUrl');
+        final file = result.files.single;
+        
+        // Set loading state and show conversion notification
+        _isConvertingHeaderImage.value = true;
+        SnackbarServiceHelper.showInfo(
+          'Converting image to base64, please wait...',
+          position: SnackPosition.BOTTOM,
+        );
+        
+        String imageUrl;
+        
+        if (kIsWeb) {
+          // On web, use bytes directly
+          if (file.bytes != null) {
+            log('🌐 Web platform: Using bytes for upload');
+            imageUrl = await controller.uploadImageWithBytes(
+              file.bytes!,
+              file.name,
+            );
+          } else {
+            throw Exception('Failed to get file bytes on web');
+          }
+        } else {
+          // On mobile/desktop, use file path
+          if (file.path != null) {
+            log('📱 Mobile/Desktop platform: Using file path');
+            imageUrl = await controller.uploadImage(file.path!);
+          } else {
+            throw Exception('Failed to get file path');
+          }
+        }
+        
+        log('🌐 Image URL received: ${imageUrl.substring(0, 50)}...');
 
         _formHeaderImage.value = imageUrl;
-        log('✅ _formHeaderImage updated to: ${_formHeaderImage.value}');
+        log('✅ _formHeaderImage updated');
 
         updatePreview();
         log('🔄 Preview updated');
 
-        Get.snackbar(
-          'Success',
-          'Header image uploaded successfully\nURL: $imageUrl',
-          duration: Duration(seconds: 3),
+        // Clear loading state and show success
+        _isConvertingHeaderImage.value = false;
+        SnackbarServiceHelper.showSuccess(
+          'Header image uploaded successfully',
+          position: SnackPosition.BOTTOM,
+          actionLabel: 'OK',
         );
       } else {
         log('❌ No file selected');
+        _isConvertingHeaderImage.value = false;
       }
     } catch (e) {
       log('💥 Upload error: $e');
-      Get.snackbar('Error', 'Failed to upload header image: $e');
+      // Clear loading state on error
+      _isConvertingHeaderImage.value = false;
+      
+      // Only show error if it's a client-side error
+      // HTTP errors are already handled by HttpService
+      if (!e.toString().contains('401') && !e.toString().contains('400') && 
+          !e.toString().contains('404') && !e.toString().contains('500') &&
+          !e.toString().contains('UnsupportedError')) {
+        SnackbarServiceHelper.showError(
+          'Failed to process header image',
+          position: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 
@@ -704,19 +1198,69 @@ class ProductsPresenterImpl extends GetxController
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
+        withData: true, // Important for web to get bytes
       );
 
       if (result != null) {
-        final filePath = result.files.single.path!;
-        final imageUrl = await _controller.uploadImage(filePath);
+        final file = result.files.single;
+        
+        // Set loading state and show conversion notification
+        _isConvertingCarouselImage.value = true;
+        SnackbarServiceHelper.showInfo(
+          'Converting carousel image to base64, please wait...',
+          position: SnackPosition.BOTTOM,
+        );
+        
+        String imageUrl;
+        
+        if (kIsWeb) {
+          // On web, use bytes directly
+          if (file.bytes != null) {
+            imageUrl = await controller.uploadImageWithBytes(
+              file.bytes!,
+              file.name,
+            );
+          } else {
+            throw Exception('Failed to get file bytes on web');
+          }
+        } else {
+          // On mobile/desktop, use file path
+          if (file.path != null) {
+            imageUrl = await controller.uploadImage(file.path!);
+          } else {
+            throw Exception('Failed to get file path');
+          }
+        }
+        
         final updatedList = _formCarouselImages.toList();
         updatedList.add(imageUrl);
         _formCarouselImages.assignAll(updatedList);
         updatePreview();
-        Get.snackbar('Success', 'Carousel image uploaded successfully');
+        
+        // Clear loading state and show success
+        _isConvertingCarouselImage.value = false;
+        SnackbarServiceHelper.showSuccess(
+          'Carousel image uploaded successfully',
+          position: SnackPosition.BOTTOM,
+          actionLabel: 'OK',
+        );
+      } else {
+        _isConvertingCarouselImage.value = false;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to upload carousel image');
+      // Clear loading state on error
+      _isConvertingCarouselImage.value = false;
+      
+      // Only show error if it's a client-side error
+      // HTTP errors are already handled by HttpService
+      if (!e.toString().contains('401') && !e.toString().contains('400') && 
+          !e.toString().contains('404') && !e.toString().contains('500') &&
+          !e.toString().contains('UnsupportedError')) {
+        SnackbarServiceHelper.showError(
+          'Failed to process carousel image',
+          position: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 
@@ -726,17 +1270,67 @@ class ProductsPresenterImpl extends GetxController
       FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.image,
         allowMultiple: false,
+        withData: true, // Important for web to get bytes
       );
 
       if (result != null) {
-        final filePath = result.files.single.path!;
-        final imageUrl = await _controller.uploadImage(filePath);
+        final file = result.files.single;
+        
+        // Set loading state and show conversion notification
+        _isConvertingRecyclingImage.value = true;
+        SnackbarServiceHelper.showInfo(
+          'Converting recycling image to base64, please wait...',
+          position: SnackPosition.BOTTOM,
+        );
+        
+        String imageUrl;
+        
+        if (kIsWeb) {
+          // On web, use bytes directly
+          if (file.bytes != null) {
+            imageUrl = await controller.uploadImageWithBytes(
+              file.bytes!,
+              file.name,
+            );
+          } else {
+            throw Exception('Failed to get file bytes on web');
+          }
+        } else {
+          // On mobile/desktop, use file path
+          if (file.path != null) {
+            imageUrl = await controller.uploadImage(file.path!);
+          } else {
+            throw Exception('Failed to get file path');
+          }
+        }
+        
         _formRecyclingImage.value = imageUrl;
         updatePreview();
-        Get.snackbar('Success', 'Recycling image uploaded successfully');
+        
+        // Clear loading state and show success
+        _isConvertingRecyclingImage.value = false;
+        SnackbarServiceHelper.showSuccess(
+          'Recycling image uploaded successfully',
+          position: SnackPosition.BOTTOM,
+          actionLabel: 'OK',
+        );
+      } else {
+        _isConvertingRecyclingImage.value = false;
       }
     } catch (e) {
-      Get.snackbar('Error', 'Failed to upload recycling image');
+      // Clear loading state on error
+      _isConvertingRecyclingImage.value = false;
+      
+      // Only show error if it's a client-side error
+      // HTTP errors are already handled by HttpService
+      if (!e.toString().contains('401') && !e.toString().contains('400') && 
+          !e.toString().contains('404') && !e.toString().contains('500') &&
+          !e.toString().contains('UnsupportedError')) {
+        SnackbarServiceHelper.showError(
+          'Failed to process recycling image',
+          position: SnackPosition.BOTTOM,
+        );
+      }
     }
   }
 
@@ -878,11 +1472,7 @@ class ProductsPresenterImpl extends GetxController
               ElevatedButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  Get.snackbar(
-                    'Info',
-                    'Linked ${_formLinkedRewards.length} reward(s) to this product',
-                    snackPosition: SnackPosition.TOP,
-                  );
+                  controller.showSuccess('Linked ${_formLinkedRewards.length} reward(s) to this product');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.green,
@@ -896,4 +1486,193 @@ class ProductsPresenterImpl extends GetxController
       ),
     );
   }
+
+  // New methods for improvements
+  @override
+  void toggleViewMode(String mode) {
+    _viewMode.value = mode;
+  }
+
+  @override
+  Future<void> duplicateProduct(BarcodeResultModel product) async {
+    try {
+      // Create a copy of the product with new name and no ID
+      final duplicatedProduct = BarcodeResultModel(
+        name: '${product.name} (Copy)',
+        code: product.code,
+        brand: product.brand,
+        instructions: product.instructions,
+        trashType: product.trashType,
+        ecoGrade: product.ecoGrade,
+        co2Packaging: product.co2Packaging,
+        mainMaterial: product.mainMaterial,
+        files: product.files, // Keep the same files
+        id: null, // No ID for new product
+      );
+
+      log(
+        '[ProductsPresenterImpl] Duplicate product: ${duplicatedProduct.toJson()}',
+      );
+
+      await controller.createProduct(duplicatedProduct);
+      await loadProducts();
+    } catch (e) {
+      // Error handling is done in controller
+      log('[ProductsPresenterImpl] Duplicate product error: $e');
+    }
+  }
+
+  @override
+  Future<void> uploadCsvFile({Uint8List? fileBytes, String? fileName}) async {
+    _isLoading.value = true;
+    try {
+      log('[ProductsPresenterImpl] Uploading CSV file: $fileBytes');
+
+      // Call controller to upload CSV file
+      final result = await controller.uploadCsvFile(
+        fileBytes: fileBytes,
+        fileName: fileName,
+      );
+
+      log('[ProductsPresenterImpl] CSV upload successful: $result');
+
+      // Refresh products list to show newly uploaded products
+      await loadProducts();
+
+      controller.showSuccess('CSV file "$fileName" uploaded successfully');
+    } catch (e) {
+      log('[ProductsPresenterImpl] CSV upload error: $e');
+      // HTTP errors are already handled by HttpService
+      // Don't show duplicate error snackbar
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+  
+  @override
+  Future<void> downloadCsvTemplate() async {
+    _isDownloadingTemplate.value = true;
+    try {
+      // Fetch active template from Firestore
+      final snapshot = await FirebaseFirestore.instance
+          .collection('csv_template')
+          .where('is_active', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (snapshot.docs.isEmpty) {
+        throw Exception('No active template found');
+      }
+
+      // Parse template model
+      final templateModel = CsvTemplateModel.fromJson(snapshot.docs.first.data());
+      
+      if (templateModel.storagePath == null) {
+        throw Exception('Template storage path not found');
+      }
+
+      log('[CSV Download] Storage path: ${templateModel.storagePath}');
+      log('[CSV Download] File name: ${templateModel.fileName}');
+
+      // Use Firebase Storage SDK to get proper download URL with token
+      log('[CSV Download] Getting download URL via Firebase Storage SDK...');
+      final storageRef = FirebaseStorage.instance.ref(templateModel.storagePath!);
+      final downloadUrl = await storageRef.getDownloadURL();
+      log('[CSV Download] Download URL with token: ${downloadUrl.substring(0, 80)}...');
+
+      // Download the file
+      log('[CSV Download] Making HTTP request...');
+      final response = await http.get(Uri.parse(downloadUrl));
+      log('[CSV Download] HTTP Status: ${response.statusCode}');
+      log('[CSV Download] Response headers: ${response.headers}');
+      if (response.statusCode != 200) {
+        log('[CSV Download] Response body: ${response.body}');
+      }
+      
+      if (response.statusCode == 200) {
+        final bytes = response.bodyBytes;
+        
+        // Create download link
+        if (kIsWeb) {
+          final blob = web.Blob([bytes.toJS].toJS);
+          final url = web.URL.createObjectURL(blob);
+          final anchor = web.HTMLAnchorElement()
+            ..href = url
+            ..download = templateModel.fileName ?? 'template.csv';
+          anchor.click();
+          
+          web.URL.revokeObjectURL(url);
+        }
+        
+        _hasDownloadedTemplate.value = true;
+        
+        controller.showSuccess('Template downloaded successfully');
+      } else {
+        throw Exception('Failed to download template');
+      }
+    } catch (e) {
+      log('Error downloading template: $e');
+      // HTTP errors are already handled by HttpService
+      // Don't show duplicate error snackbar
+    } finally {
+      _isDownloadingTemplate.value = false;
+    }
+  }
+  
+  @override
+  Future<void> pickCsvFile() async {
+    _isCsvUploading.value = true;
+    try {
+      FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: ['csv'],
+        allowMultiple: false,
+        withData: true,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final file = result.files.first;
+        
+        _csvFileName.value = file.name;
+        _csvFileBytes.value = file.bytes;
+        _csvFilePath.value = file.path ?? '';
+        _hasSelectedCsvFile.value = true;
+        
+        log('[ProductsPresenterImpl] File selected: ${file.name}');
+        log('[ProductsPresenterImpl] File size: ${file.size} bytes');
+      }
+    } catch (e) {
+      controller.showError('Error selecting file: $e');
+    } finally {
+      _isCsvUploading.value = false;
+    }
+  }
+  
+  @override
+  void clearCsvSelection() {
+    _csvFileName.value = '';
+    _csvFilePath.value = '';
+    _csvFileBytes.value = null;
+    _hasSelectedCsvFile.value = false;
+    _hasDownloadedTemplate.value = false;
+  }
+  
+  // Pagination helper methods
+  @override
+  int getTotalPages() {
+    return _totalCount.value > 0 
+      ? (_totalCount.value / _perPage.value).ceil() 
+      : 1;
+  }
+  
+  @override
+  bool getHasPrevious() {
+    return _currentPage.value > 1;
+  }
+  
+  @override
+  int getSafeCurrentPage() {
+    return _currentPage.value.clamp(1, getTotalPages());
+  }
+  
 }

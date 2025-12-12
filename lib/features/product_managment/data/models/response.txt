@@ -1,0 +1,40 @@
+{
+    "pagination": {
+        "count": 1,
+        "has_next": false,
+        "page": 1,
+        "per_page": 10
+    },
+    "result": [
+        {
+            "brand": "Fairy",
+            "co2_packaging": 0.22452,
+            "code": "2457245724",
+            "eco_grade": "A",
+            "files": [
+                {
+                    "created_by": {
+                        "id": 756,
+                        "name": "User1 T4G"
+                    },
+                    "file_name": "barcode_2457245724.jpg",
+                    "id": 204,
+                    "mime_type": "image/jpeg",
+                    "size": 334910,
+                    "url": "https://t4gstoragedev01.blob.core.windows.net/euw-blob-container-t4g-dev01/barcode_2457245724.jpg"
+                }
+            ],
+            "id": 18,
+            "instructions": "Some instrcutions to recycle this product",
+            "main_material": null,
+            "name": "My second product",
+            "trash_type": "plastic"
+        }
+    ]
+}
+
+BarcodeModel. 
+ -> BarcodePaginationModel.
+ -> BarcodeResultModel
+    -> BarcodeResultFileModel
+        -> BarcodeResultFileCreatedByModel

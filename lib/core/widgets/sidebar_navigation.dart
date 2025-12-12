@@ -170,14 +170,14 @@ class SidebarNavigation extends StatelessWidget {
               icon: Icons.storefront_outlined,
               activeIcon: Icons.storefront,
               title: 'Rewards',
-              route: AppRoutes.marketplaceProducts,
+              route: AppRoutes.rewards,
             ),
             const SizedBox(height: 4),
             _buildNavItem(
               icon: Icons.rule_folder_outlined,
               activeIcon: Icons.rule_folder,
               title: 'Rules',
-              route: AppRoutes.rules,
+              route: AppRoutes.rulesV2,
             ),
             const SizedBox(height: 4),
             _buildNavItem(

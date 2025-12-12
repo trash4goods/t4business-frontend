@@ -4,6 +4,12 @@ import 'package:t4g_for_business/features/rules/data/models/rule.dart';
 import '../../../data/models/product_item.dart';
 
 abstract class RulesPresenterInterface extends GetxController {
+  // global from parent DashboardShell
+  GlobalKey<ScaffoldState> get scaffoldKey;
+  RxString get currentRoute;
+  void onNavigate(String route);
+  void onLogout();
+  void onToggle();
   // Core data observables
   RxList<RuleModel> get rules;
   RxList<RuleModel> get filteredRules;
@@ -98,6 +104,7 @@ abstract class RulesPresenterInterface extends GetxController {
   // Development/Testing methods
   void loadMockData();
   void clearAllRules({bool reloadMockData = false});
+  void showClearAllRulesConfirmation();
 
   // Form methods
   void validateForm();

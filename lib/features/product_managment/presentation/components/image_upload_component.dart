@@ -1,5 +1,6 @@
 // lib/core/components/common/image_upload_component.dart
 import 'dart:io';
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/app/themes/app_colors.dart';
@@ -210,6 +211,22 @@ class ImageUploadComponent extends StatelessWidget {
           return _buildImageErrorWidget();
         },
       );
+    } else if (_isBase64DataUrl(imageUrl!)) {
+      // Handle base64 data URLs
+      try {
+        final bytes = _decodeBase64Image(imageUrl!);
+        return Image.memory(
+          bytes,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildImageErrorWidget();
+          },
+        );
+      } catch (e) {
+        return _buildImageErrorWidget();
+      }
     } else {
       // Local file path - only on non-web platforms
       if (kIsWeb) {
@@ -238,6 +255,16 @@ class ImageUploadComponent extends StatelessWidget {
 
   bool _isHttpUrl(String url) {
     return url.startsWith('http://') || url.startsWith('https://');
+  }
+
+  bool _isBase64DataUrl(String url) {
+    return url.startsWith('data:image/') && url.contains(';base64,');
+  }
+
+  Uint8List _decodeBase64Image(String dataUrl) {
+    // Extract the base64 part after 'data:image/[type];base64,'
+    final base64String = dataUrl.split(',')[1];
+    return base64Decode(base64String);
   }
 
   Widget _buildImageErrorWidget() {

@@ -71,99 +71,98 @@ class ModernTextField extends StatelessWidget {
         labelColor ??
         (isFocused ? AppColors.primaryLight : AppColors.lightTextSecondary);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        RichText(
-          text: TextSpan(
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: effectiveLabelColor,
+    return Material(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          RichText(
+            text: TextSpan(
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: effectiveLabelColor,
+              ),
+              children: [
+                TextSpan(text: label),
+                if (isRequired)
+                  const TextSpan(
+                    text: ' *',
+                    style: TextStyle(color: AppColors.primary),
+                  ),
+              ],
             ),
-            children: [
-              TextSpan(text: label),
-              if (isRequired)
-                const TextSpan(
-                  text: ' *',
-                  style: TextStyle(color: AppColors.primary),
-                ),
-            ],
           ),
-        ),
-        const SizedBox(height: 6),
-        Container(
-          decoration: BoxDecoration(
-            color: const Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: errorText != null ? Colors.red : effectiveBorderColor,
-              width: isFocused ? 2 : 1,
-            ),
-            boxShadow:
-                isFocused
-                    ? [
-                      BoxShadow(
-                        color: AppColors.blueGradientStart.withValues(
-                          alpha: 0.1,
+          const SizedBox(height: 12),
+          Container(
+            decoration: BoxDecoration(
+              color: const Color(0xFFF8FAFC),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: errorText != null ? Colors.red : effectiveBorderColor,
+                width: isFocused ? 2 : 1,
+              ),
+              boxShadow:
+                  isFocused
+                      ? [
+                        BoxShadow(
+                          color: AppColors.blueGradientStart.withValues(
+                            alpha: 0.1,
+                          ),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
                         ),
-                        blurRadius: 4,
-                        offset: const Offset(0, 2),
-                      ),
-                    ]
-                    : [],
-          ),
-          child: TextField(
-            controller: controller,
-            focusNode: focusNode,
-            onChanged: onChanged,
-            onSubmitted: onSubmitted,
-            onTap: onTap,
-            onEditingComplete: onEditingComplete,
-            obscureText: obscureText,
-            keyboardType: keyboardType,
-            textInputAction: textInputAction,
-            maxLines: maxLines,
-            minLines: minLines,
-            maxLength: maxLength,
-            enabled: enabled,
-            readOnly: readOnly,
-            textAlign: textAlign,
-            textCapitalization: textCapitalization,
-            autocorrect: autocorrect,
-            enableSuggestions: enableSuggestions,
-            style: const TextStyle(
-              color: AppColors.lightTextPrimary,
-              fontSize: 16,
+                      ]
+                      : [],
             ),
-            decoration: InputDecoration(
-              hintText: hintText,
-              hintStyle: const TextStyle(
-                color: AppColors.lightTextSecondary,
+            child: TextField(
+              controller: controller,
+              focusNode: focusNode,
+              onChanged: onChanged,
+              onSubmitted: onSubmitted,
+              onTap: onTap,
+              onEditingComplete: onEditingComplete,
+              obscureText: obscureText,
+              keyboardType: keyboardType,
+              textInputAction: textInputAction,
+              maxLines: maxLines,
+              minLines: minLines,
+              maxLength: maxLength,
+              enabled: enabled,
+              readOnly: readOnly,
+              textAlign: textAlign,
+              textCapitalization: textCapitalization,
+              autocorrect: autocorrect,
+              enableSuggestions: enableSuggestions,
+              style: const TextStyle(
+                color: AppColors.lightTextPrimary,
                 fontSize: 16,
               ),
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 12,
+              decoration: InputDecoration(
+                hintText: hintText,
+                hintStyle: const TextStyle(
+                  color: AppColors.lightTextSecondary,
+                  fontSize: 16,
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
+                border: InputBorder.none,
+                suffixIcon: suffixIcon,
+                prefixIcon: prefixIcon,
+                counterText: maxLength != null ? null : '',
               ),
-              border: InputBorder.none,
-              suffixIcon: suffixIcon,
-              prefixIcon: prefixIcon,
-              counterText: maxLength != null ? null : '',
             ),
           ),
-        ),
-        if (errorText != null) ...[
-          const SizedBox(height: 4),
-          Text(
-            errorText!,
-            style: const TextStyle(
-              color: Colors.red,
-              fontSize: 12,
+          if (errorText != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              errorText!,
+              style: const TextStyle(color: Colors.red, fontSize: 12),
             ),
-          ),
+          ],
         ],
-      ],
+      ),
     );
   }
 }

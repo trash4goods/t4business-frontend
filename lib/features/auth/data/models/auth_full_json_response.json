@@ -1,0 +1,168 @@
+{
+    "message": "Tokens created successfully",
+    "result": {
+        "access_token": "IHZr-kh-9LxGrKS8eA0o2dICKhfuFWXk4-W_QRvr_as",
+        "expires_in": "2025-09-08T17:29:13.629588+00:00",
+        "profile": {
+            "credits1": 40,
+            "credits2": 0,
+            "email": "trash4goods@gmail.com",
+            "email_verified_at": "2024-06-27 16:44:03",
+            "expo_token": null,
+            "fcm_token": null,
+            "first_name": "Marcelo",
+            "full_roles": [
+                {
+                    "department_id": 2,
+                    "name": "owner"
+                }
+            ],
+            "google_token": null,
+            "id": 1,
+            "inserted_at": "2024-06-27 16:43:29",
+            "is_admin": true,
+            "last_name": "Cesar",
+            "name": "Marcelo Cesar",
+            "phone_indicative": null,
+            "phone_number": null,
+            "preferences": {
+                "language": "en-US",
+                "reporting_flag": false,
+                "user_id": 1
+            },
+            "roles": [
+                "owner"
+            ],
+            "statistics": {
+                "totalActions": 63,
+                "totalBins": 0,
+                "totalCO2": 0,
+                "totalEvents": 1,
+                "totalPodiums": 0,
+                "totalPrizes": 0,
+                "totalProducts": 0,
+                "totalReports": 0,
+                "totalScans": 0,
+                "years": [
+                    {
+                        "CO2": 0,
+                        "bins": 0,
+                        "events": 0,
+                        "months": [
+                            {
+                                "actions": 1,
+                                "month": 7
+                            },
+                            {
+                                "actions": 10,
+                                "month": 8
+                            },
+                            {
+                                "actions": 10,
+                                "month": 9
+                            },
+                            {
+                                "actions": 7,
+                                "month": 10
+                            },
+                            {
+                                "actions": 6,
+                                "metal": [
+                                    1,
+                                    0
+                                ],
+                                "month": 11
+                            },
+                            {
+                                "actions": 7,
+                                "month": 12
+                            }
+                        ],
+                        "podiums": 0,
+                        "prizes": 0,
+                        "products": 0,
+                        "reports": 0,
+                        "scans": 0,
+                        "year": 2024
+                    },
+                    {
+                        "CO2": 0,
+                        "bins": 0,
+                        "events": 1,
+                        "months": [
+                            {
+                                "actions": 4,
+                                "month": 1
+                            },
+                            {
+                                "actions": 7,
+                                "month": 2
+                            },
+                            {
+                                "actions": 1,
+                                "month": 3
+                            },
+                            {
+                                "actions": 7,
+                                "metal": [
+                                    3,
+                                    0
+                                ],
+                                "month": 4,
+                                "plastic": [
+                                    1,
+                                    0
+                                ]
+                            },
+                            {
+                                "actions": 3,
+                                "month": 5
+                            }
+                        ],
+                        "podiums": 0,
+                        "prizes": 0,
+                        "products": 0,
+                        "reports": 0,
+                        "scans": 0,
+                        "year": 2025
+                    }
+                ]
+            },
+            "status": "active",
+            "user_partners_departments": [
+                {
+                    "department": {
+                        "department_type": "brand",
+                        "department_url": null,
+                        "description": null,
+                        "domain": "trash2goods.com",
+                        "files": [
+                            {
+                                "created_by": {
+                                    "id": 1,
+                                    "name": "Marcelo Cesar"
+                                },
+                                "file_name": "brand_2_e785943b97c347d7a0891b52ffe848c9.jpg",
+                                "id": 187,
+                                "mime_type": "image/jpeg",
+                                "size": 334910,
+                                "url": "https://t4gstoragedev01.blob.core.windows.net/euw-blob-container-t4g-dev01/brand_2_e785943b97c347d7a0891b52ffe848c9.jpg"
+                            }
+                        ],
+                        "id": 2,
+                        "name": "Test",
+                        "status": "waiting",
+                        "t4b_tier": "free"
+                    },
+                    "partner": null
+                }
+            ],
+            "username": null,
+            "utc_offset_h": 0,
+            "utc_offset_m": 0
+        },
+        "refresh_token": "C-Ebm9v3RXSuChmiDUZe2lyeCVriZAu1TkvkqlwHoKs",
+        "token_type": "Bearer"
+    },
+    "success": true
+}

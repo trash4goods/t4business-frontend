@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:t4g_for_business/core/app/app_routes.dart';
 
 import '../services/auth_service.dart';
+import '../services/pending_task_service.dart';
 
 /// Unified middleware for handling all route protection
 /// Priority: 0 - Executes first to handle all routing logic
@@ -33,9 +34,14 @@ class AppMiddleware extends GetMiddleware {
 
       // Define protected routes that require authentication
       const protectedRoutes = [
+        AppRoutes.dashboardShell,
         AppRoutes.dashboard,
         AppRoutes.productManagement,
         AppRoutes.profile,
+        AppRoutes.rulesV2,
+        AppRoutes.pendingTasks,
+        // AppRoutes.marketplaceProducts,
+        AppRoutes.rewards,
       ];
 
       // Define guest-only routes (authenticated users shouldn't access)
@@ -70,10 +76,23 @@ class AppMiddleware extends GetMiddleware {
 
       // Guest-only route handling
       if (isGuestOnlyRoute && authService.isAuthenticated) {
-        print(
-          'AppMiddleware: Redirecting authenticated user from guest route $normalizedRoute to dashboard',
-        );
-        return const RouteSettings(name: AppRoutes.dashboard);
+        final uid = authService.user?.uid;
+        if (uid != null) {
+          try {
+            final pendingTaskService = Get.find<PendingTaskService>();
+            final targetRoute = pendingTaskService.getAuthenticatedUserRoute(uid);
+            print(
+              'AppMiddleware: Redirecting authenticated user from guest route $normalizedRoute to $targetRoute',
+            );
+            return RouteSettings(name: targetRoute);
+          } catch (e) {
+            print('AppMiddleware: PendingTaskService error: $e, defaulting to dashboard');
+            return const RouteSettings(name: AppRoutes.dashboardShell);
+          }
+        } else {
+          print('AppMiddleware: No user UID available, defaulting to dashboard');
+          return const RouteSettings(name: AppRoutes.dashboardShell);
+        }
       }
 
       print('AppMiddleware: Allowing access to route $normalizedRoute');

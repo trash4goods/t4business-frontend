@@ -20,7 +20,7 @@ class GuestMiddleware extends GetMiddleware {
         print(
           'GuestMiddleware: User authenticated, redirecting to dashboard from $route',
         );
-        return const RouteSettings(name: AppRoutes.dashboard);
+        return const RouteSettings(name: AppRoutes.dashboardShell);
       }
 
       print(

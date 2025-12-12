@@ -1,4 +1,5 @@
 import 'package:t4g_for_business/features/rules/data/models/rule.dart';
+import 'package:t4g_for_business/features/rules/presentation/presenters/interface/rule.dart';
 
 abstract class RulesControllerInterface {
   // Data access methods only - no observables
@@ -27,4 +28,8 @@ abstract class RulesControllerInterface {
   List<String> getAllCategories();
   void addCategory(String category);
   void removeCategory(String category);
+
+  // UI helpers (trigger UI from controller to keep view lean)
+  void showRuleActions(RuleModel rule, RulesPresenterInterface presenter);
+  void showMobileFiltersBottomSheet(RulesPresenterInterface presenter);
 }

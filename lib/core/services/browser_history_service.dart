@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'dart:html' as html;
@@ -13,9 +15,13 @@ class BrowserHistoryService extends GetxService {
 
   // Protected routes where back button should be controlled
   static const List<String> _protectedRoutes = [
+    AppRoutes.dashboardShell,
     AppRoutes.dashboard,
     AppRoutes.profile,
     AppRoutes.productManagement,
+    // AppRoutes.marketplaceProducts,
+    AppRoutes.rewards,
+    AppRoutes.rulesV2,
   ];
 
   // Routes that authenticated users shouldn't access via back button
@@ -58,20 +64,20 @@ class BrowserHistoryService extends GetxService {
         final isAuthenticated = user != null;
         final wasAuthenticated = previousUser != null;
 
-        print(
+        log(
           'BrowserHistory: Auth state changed - authenticated: $isAuthenticated (was: $wasAuthenticated)',
         );
 
         // Only clear protection if user actually logged out (was authenticated, now not)
         if (wasAuthenticated && !isAuthenticated) {
-          print('BrowserHistory: User logged out, clearing protection');
+          log('BrowserHistory: User logged out, clearing protection');
           _clearProtectionAndHistory();
         }
 
         previousUser = user;
       });
     } catch (e) {
-      print('BrowserHistory: Failed to setup auth listener: $e');
+      log('BrowserHistory: Failed to setup auth listener: $e');
     }
   }
 
@@ -79,7 +85,7 @@ class BrowserHistoryService extends GetxService {
   void _clearProtectionAndHistory() {
     if (!kIsWeb) return;
 
-    print('BrowserHistory: Clearing protection and cleaning history');
+    log('BrowserHistory: Clearing protection and cleaning history');
 
     // Reset tracking variables
     _currentProtectedRoute = null;
@@ -91,7 +97,7 @@ class BrowserHistoryService extends GetxService {
     // Replace current state to clean up any polluted history
     html.window.history.replaceState(null, '', currentRoute);
 
-    print('BrowserHistory: History cleaned, protection cleared');
+    log('BrowserHistory: History cleaned, protection cleared');
   }
 
   /// Setup popstate listener for browser back button
@@ -103,7 +109,7 @@ class BrowserHistoryService extends GetxService {
     });
 
     _isListening = true;
-    print('BrowserHistory: Popstate listener enabled');
+    log('BrowserHistory: Popstate listener enabled');
   }
 
   /// Handle browser back button press
@@ -118,14 +124,14 @@ class BrowserHistoryService extends GetxService {
     try {
       final authService = Get.find<AuthService>();
 
-      print('BrowserHistory: Back button pressed on route $currentRoute');
-      print(
+      log('BrowserHistory: Back button pressed on route $currentRoute');
+      log(
         'BrowserHistory: User authenticated: ${authService.isAuthenticated}',
       );
 
       // If user is authenticated and on a protected route
       if (authService.isAuthenticated && _isProtectedRoute(currentRoute)) {
-        print(
+        log(
           'BrowserHistory: Preventing back navigation from protected route',
         );
 
@@ -142,16 +148,16 @@ class BrowserHistoryService extends GetxService {
       // If user is authenticated but tries to go back to restricted routes
       if (authService.isAuthenticated &&
           _isRestrictedRouteWhenAuthenticated(currentRoute)) {
-        print(
+        log(
           'BrowserHistory: Redirecting authenticated user away from $currentRoute',
         );
 
         // Prevent the navigation and redirect to dashboard
-        html.window.history.pushState(null, '', AppRoutes.dashboard);
+        html.window.history.pushState(null, '', AppRoutes.dashboardShell);
 
         // Use a delayed navigation to avoid conflicts
         Future.delayed(const Duration(milliseconds: 10), () {
-          Get.offAllNamed(AppRoutes.dashboard);
+          Get.offAllNamed(AppRoutes.dashboardShell);
         });
 
         _isHandlingBackButton = false;
@@ -160,7 +166,7 @@ class BrowserHistoryService extends GetxService {
 
       // CRITICAL FIX: If user is NOT authenticated but tries to access protected routes
       if (!authService.isAuthenticated && _isProtectedRoute(currentRoute)) {
-        print(
+        log(
           'BrowserHistory: Blocking unauthenticated access to protected route $currentRoute',
         );
 
@@ -176,7 +182,7 @@ class BrowserHistoryService extends GetxService {
         return;
       }
     } catch (e) {
-      print('BrowserHistory: Error checking auth state: $e');
+      log('BrowserHistory: Error checking auth state: $e');
       // If we can't determine auth state, be safe and allow navigation
     }
 
@@ -201,7 +207,7 @@ class BrowserHistoryService extends GetxService {
       }
     }
 
-    print(
+    log(
       'BrowserHistory: Current browser route: $route (pathname: ${location.pathname}, hash: ${location.hash})',
     );
     return route;
@@ -217,7 +223,7 @@ class BrowserHistoryService extends GetxService {
     final currentRoute = _getCurrentRouteFromBrowser();
     _currentProtectedRoute = currentRoute;
 
-    print('BrowserHistory: Enabling back button protection for $currentRoute');
+    log('BrowserHistory: Enabling back button protection for $currentRoute');
 
     // Only enable if we're actually on a protected route
     if (_isProtectedRoute(currentRoute)) {
@@ -256,17 +262,17 @@ class BrowserHistoryService extends GetxService {
 
     if (authService.isAuthenticated &&
         _isRestrictedRouteWhenAuthenticated(route)) {
-      print(
+      log(
         'BrowserHistory: Redirecting authenticated user from $route to dashboard',
       );
-      Get.offAllNamed(AppRoutes.dashboard);
+      Get.offAllNamed(AppRoutes.dashboardShell);
     }
   }
 
   /// Reset history protection (useful when logging out)
   void resetProtection() {
     _clearProtectionAndHistory();
-    print('BrowserHistory: Protection reset');
+    log('BrowserHistory: Protection reset');
   }
 
   @override

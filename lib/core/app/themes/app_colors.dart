@@ -140,6 +140,11 @@ class AppColors {
   static const Color draft = Color(0xFFF59E0B);
   static const Color published = Color(0xFF3B82F6);
 
+  // Additional colors
+  static const Color purple = Color(0xFF8B5CF6);
+  static const Color orange = Color(0xFFF97316);
+  static const Color yellow = Color(0xFFFBBF24);
+  
   // Chart colors
   static const List<Color> chartColors = [
     Color(0xFF8B5CF6),
@@ -148,6 +153,10 @@ class AppColors {
     Color(0xFFF59E0B),
     Color(0xFFEF4444),
   ];
+
+  // Interactive chart colors (matching shadcn chart variables)
+  static const Color chart1 = Color(0xFF8B5CF6); // Desktop color
+  static const Color chart2 = Color(0xFF06B6D4); // Mobile color
 
   // Border Colors
   static const Color borderColor = Color(0xFFE0E0E0);

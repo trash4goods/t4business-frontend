@@ -1,8 +1,12 @@
 // features/app_initialization/presentation/controllers/splash_controller_impl.dart
+import 'dart:developer';
+
 import 'package:get/get.dart';
 
 import '../../../../../core/app/app_routes.dart';
+import '../../../../../core/services/auth_service.dart';
 import '../../../../../core/services/navigation.dart';
+import '../../../../../core/services/pending_task_service.dart';
 import '../../../../../core/services/snackbar.dart';
 import '../../../domain/use_cases/splash.dart';
 import '../../presenters/interface/splash.interface.dart';
@@ -40,7 +44,7 @@ class SplashControllerImpl implements SplashControllerInterface {
   @override
   void navigateToNextScreen(bool isLoggedIn) {
     if (isLoggedIn) {
-      navigateToDashboard();
+      _navigateToAuthenticatedRoute();
     } else {
       navigateToLogin();
     }
@@ -56,14 +60,43 @@ class SplashControllerImpl implements SplashControllerInterface {
     NavigationService.offAll(AppRoutes.dashboard);
   }
 
+  /// Navigate authenticated users to the appropriate route based on pending tasks
+  void _navigateToAuthenticatedRoute() async {
+    try {
+      final authService = Get.find<AuthService>();
+      final uid = authService.user?.uid;
+      
+      if (uid != null) {
+        final pendingTaskService = Get.find<PendingTaskService>();
+        
+        // Check and cache pending tasks
+        final hasPendingTasks = await pendingTaskService.checkAndCachePendingTasks(uid);
+        
+        if (hasPendingTasks) {
+          print('SplashController: User has pending tasks, navigating to pending tasks');
+          NavigationService.offAll(AppRoutes.pendingTasks);
+        } else {
+          print('SplashController: No pending tasks, navigating to dashboard');
+          navigateToDashboard();
+        }
+      } else {
+        print('SplashController: No user UID available, navigating to login');
+        navigateToLogin();
+      }
+    } catch (e) {
+      print('SplashController: Error checking pending tasks: $e, defaulting to dashboard');
+      navigateToDashboard();
+    }
+  }
+
   @override
   void initializeApp() async {
     // SECURITY FIX: Check if user is trying to access protected route directly
     final currentRoute = Get.currentRoute;
-    print('SplashController: App initialized with route: $currentRoute');
+    log('SplashController: App initialized with route: $currentRoute');
 
     // Define protected routes
-    const protectedRoutes = ['/dashboard', '/products', '/profile'];
+    const protectedRoutes = [AppRoutes.dashboardShell, AppRoutes.dashboard, AppRoutes.productManagement, AppRoutes.rewards, AppRoutes.rulesV2, AppRoutes.profile];
     final isAccessingProtectedRoute = protectedRoutes.any(
       (route) => currentRoute.contains(route),
     );
@@ -79,6 +112,10 @@ class SplashControllerImpl implements SplashControllerInterface {
           'SplashController: SECURITY BLOCK - Redirecting unauthenticated user to login',
         );
         navigateToLogin();
+        return;
+      } else {
+        // User is authenticated, check for pending tasks
+        _navigateToAuthenticatedRoute();
         return;
       }
     }

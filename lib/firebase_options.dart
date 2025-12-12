@@ -3,6 +3,7 @@
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -52,14 +53,13 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // TODO: Add to .env file
-  static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyAqnCk7d1_UbqbOqH3RXzYQwcf6iQod8y8',
-    appId: '1:722144377218:web:e013180dc34c4a46aab79b',
-    messagingSenderId: '722144377218',
-    projectId: 't4g-for-business',
-    authDomain: 't4g-for-business.firebaseapp.com',
-    storageBucket: 't4g-for-business.firebasestorage.app',
-    measurementId: 'G-PXC3MYSZMX',
+  static FirebaseOptions get web => FirebaseOptions(
+    apiKey: dotenv.env['FIREBASE_API_KEY'] ?? '',
+    appId: dotenv.env['FIREBASE_APP_ID'] ?? '',
+    messagingSenderId: dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? '',
+    projectId: dotenv.env['FIREBASE_PROJECT_ID'] ?? '',
+    authDomain: dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? '',
+    storageBucket: dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? '',
+    measurementId: dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? '',
   );
 }

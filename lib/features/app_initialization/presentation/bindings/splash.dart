@@ -1,6 +1,10 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 
+import '../../../../core/services/http_interface.dart';
+import '../../../../core/services/http_service.dart';
+import '../../../auth/data/datasources/implementation/login_remote_datasource_impl.dart';
+import '../../../auth/data/datasources/interface/login_remote_datasource_interface.dart';
 import '../../data/datasources/firebase_auth.dart';
 import '../../data/repositories/splash.dart';
 import '../../domain/repositories/splash.dart';
@@ -11,6 +15,15 @@ import '../presenters/presenters.dart';
 class SplashBinding implements Bindings {
   @override
   void dependencies() {
+    // Register HTTP service for login datasource
+    Get.lazyPut<IHttp>(() => HttpService(), fenix: true);
+    
+    // Register login datasource for pending task service
+    Get.lazyPut<LoginRemoteDatasourceInterface>(
+      () => LoginRemoteDatasourceImpl(Get.find<IHttp>()),
+      fenix: true,
+    );
+    
     // Register Firebase Auth instance
     Get.lazyPut<FirebaseAuth>(() => FirebaseAuth.instance, fenix: true);
 

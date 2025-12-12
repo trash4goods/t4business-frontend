@@ -6,7 +6,6 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/app_logo.dart';
 import '../controllers/interface/splash.interface.dart';
 import '../presenters/interface/splash.interface.dart';
-import 'dart:html' as html;
 
 class SplashView
     extends CustomGetView<SplashControllerInterface, SplashPresenterInterface> {
@@ -15,7 +14,7 @@ class SplashView
   @override
   Widget buildView(BuildContext context) {
     businessController.initializeApp();
-    html.document.title = "Trash4Business";
+
     return Scaffold(
       body: GradientBackground(
         child: Center(

@@ -4,13 +4,18 @@ import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:t4g_for_business/features/rules/data/models/rule.dart';
 import 'package:t4g_for_business/features/rules/presentation/controllers/interface/rule.dart';
 import 'package:t4g_for_business/features/rules/presentation/controllers/implementation/rule.dart';
+import '../../../../../core/app/app_routes.dart';
+import '../../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
 import '../../../data/models/product_item.dart';
 import '../interface/rule.dart';
 import '../../../../../utils/helpers/snackbar_service.dart';
 
 class RulesPresenterImpl extends RulesPresenterInterface {
-  RulesPresenterImpl(this.controller);
+  RulesPresenterImpl({required this.controller, required this.dashboardShellController});
   final RulesControllerInterface controller;
+
+  final DashboardShellControllerInterface dashboardShellController;
+  final RxString _currentRoute = AppRoutes.rulesV2.obs;
 
   // Core data observables
   @override
@@ -79,8 +84,21 @@ class RulesPresenterImpl extends RulesPresenterInterface {
   final RxBool showCreateDialog = false.obs;
 
   @override
+  late GlobalKey<ScaffoldState> scaffoldKey;
+  @override
+  late RxString currentRoute = _currentRoute;
+  @override
+  void onNavigate(String value) => dashboardShellController.handleMobileNavigation(value);
+  @override
+  void onLogout() => dashboardShellController.logout();
+  @override
+  void onToggle() => dashboardShellController.toggleSidebar();
+
+  @override
   void onInit() {
     super.onInit();
+        scaffoldKey = dashboardShellController.scaffoldKey;
+    dashboardShellController.currentRoute.value = currentRoute.value;
     _setupFilters();
     refreshRules();
     loadMockData();
@@ -367,6 +385,33 @@ class RulesPresenterImpl extends RulesPresenterInterface {
     }
   }
 
+  /// Show confirmation dialog for clearing all rules
+  @override
+  void showClearAllRulesConfirmation() {
+    showShadDialog(
+      context: Get.context!,
+      builder: (context) => ShadDialog.alert(
+        title: const Text('Clear All Rules'),
+        description: const Text(
+          'Are you sure you want to clear all rules? This action cannot be undone and will remove all existing rules.',
+        ),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ShadButton.destructive(
+            onPressed: () {
+              Navigator.of(context).pop();
+              clearAllRules();
+            },
+            child: const Text('Clear All'),
+          ),
+        ],
+      ),
+    );
+  }
+
   /// Clear all rules and optionally reload with mock data
   @override
   void clearAllRules({bool reloadMockData = false}) {
@@ -416,6 +461,14 @@ class RulesPresenterImpl extends RulesPresenterInterface {
       selectedPriority.value = rule.priority;
       selectedStatus.value = rule.isActive;
       selectedRuleId.value = ruleId;
+      // Initialize selectedProducts from the rule's linked categories/tags.
+      // Since we currently persist linked products as category names (and tags),
+      // reconstruct the selection by matching availableProducts by title.
+      final ruleTitles = rule.categories.map((c) => c.toLowerCase()).toSet();
+      final matchedProducts = availableProducts
+          .where((p) => ruleTitles.contains(p.title.toLowerCase()))
+          .toList();
+      selectedProducts.assignAll(matchedProducts);
       isEditing.value = true;
       validateForm();
       showCreateDialog.value = true;

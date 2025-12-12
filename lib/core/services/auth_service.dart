@@ -54,10 +54,18 @@ class AuthService extends GetxService {
 
   Future<UserEntity?> execute(String email, String password) async {
     try {
-      final response = await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
+      UserCredential? response;
+      try {
+        response = await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      } catch (e) {
+        response = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+          email: email,
+          password: password,
+        );
+      }
       return UserEntity(
         email: response.user?.email ?? '',
         token: await response.user?.getIdToken(),
@@ -108,6 +116,49 @@ class AuthService extends GetxService {
       return true;
     } catch (e) {
       return false;
+    }
+  }
+
+  Future<UserCredential?> createUserWithEmailAndPassword(
+    String email,
+    String password,
+    String name,
+  ) async {
+    try {
+      final userCredential = await FirebaseAuth.instance
+          .createUserWithEmailAndPassword(email: email, password: password);
+
+      // Update the user's display name
+      if (userCredential.user != null) {
+        await userCredential.user!.updateDisplayName(name);
+        await userCredential.user!.reload();
+      }
+
+      return userCredential;
+    } catch (e) {
+      log('Registration error: $e');
+      throw Exception('Registration failed: ${e.toString()}');
+    }
+  }
+
+  Future<void> changePassword(String oldPassword, String newPassword) async {
+    try {
+      final user = FirebaseAuth.instance.currentUser;
+      if (user == null || user.email == null) {
+        throw Exception('No authenticated user found');
+      }
+
+      // Re-authenticate user
+      final credential = EmailAuthProvider.credential(
+        email: user.email!,
+        password: oldPassword,
+      );
+      await user.reauthenticateWithCredential(credential);
+
+      // Update password
+      await user.updatePassword(newPassword);
+    } catch (e) {
+      throw Exception('Change password failed: ${e.toString()}');
     }
   }
 }

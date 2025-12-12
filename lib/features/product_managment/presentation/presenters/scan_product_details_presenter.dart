@@ -1,7 +1,11 @@
+import 'dart:developer';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:get/get.dart';
 import '../../domain/entities/product_file_entity.dart';
 import '../../domain/entities/scanned_product_entity.dart';
+import '../../data/models/upload_file_model.dart';
+import '../../utils/image_display_helper.dart';
 import '../interfaces/scan_product_details_interfaces.dart';
 
 class ScanProductDetailsViewPresentation extends ScanProductDetailsViewPresenter
@@ -53,7 +57,7 @@ class ScanProductDetailsViewPresentation extends ScanProductDetailsViewPresenter
     _isPageLoading.value = false;
   }
 
-  // Method to update product data from form
+  // Method to update product data from form using ImageDisplayHelper
   void updateProductData({
     required String title,
     required String description,
@@ -64,44 +68,45 @@ class ScanProductDetailsViewPresentation extends ScanProductDetailsViewPresenter
     required List<String> categories,
     String brand = '',
   }) {
-    print('📱 MobilePreview updateProductData called:');
-    print('  📷 headerImage: $headerImage');
-    print('  🎠 carouselImages: $carouselImages');
-    print('  ♻️ recyclingImage: $recyclingImage');
+    log('📱 MobilePreview updateProductData called:');
+    log('  📷 headerImage: $headerImage');
+    log('  🎠 carouselImages: $carouselImages');
+    log('  ♻️ recyclingImage: $recyclingImage');
 
-    // Header image is separate - not part of carousel
-    String? finalHeaderImage =
-        headerImage?.isNotEmpty == true ? headerImage : null;
+    // Create upload files list from the provided images
+    List<UploadFileModel> uploadFiles = [];
 
-    // Carousel images are separate from header
-    List<ProductFileEntity> carouselFileList = [];
+    // Add header image first (if provided)
+    if (headerImage?.isNotEmpty == true) {
+      uploadFiles.add(UploadFileModel(url: headerImage));
+    }
+
+    // Add carousel images in the middle
     if (carouselImages?.isNotEmpty == true) {
-      print('✅ Adding ${carouselImages!.length} carousel images');
-      carouselFileList.addAll(
-        carouselImages.map((url) => ProductFileEntity(url: url)),
+      uploadFiles.addAll(
+        carouselImages!.map((url) => UploadFileModel(url: url)),
       );
     }
 
-    // Determine recycling image based on carousel images
-    String? finalRecyclingImage;
-    if (carouselImages?.isNotEmpty == true) {
-      if (carouselImages!.length == 1) {
-        // If only 1 carousel image, use it for recycling
-        finalRecyclingImage = carouselImages.first;
-        print(
-          '✅ Using single carousel image for recycling: $finalRecyclingImage',
-        );
-      } else if (carouselImages.length >= 2) {
-        // If 2+ carousel images, use the last one for recycling
-        finalRecyclingImage = carouselImages.last;
-        print(
-          '✅ Using last carousel image for recycling: $finalRecyclingImage',
-        );
-      }
+    // Add recycling image last (if provided and different from carousel images)
+    if (recyclingImage?.isNotEmpty == true &&
+        (carouselImages?.contains(recyclingImage) != true)) {
+      uploadFiles.add(UploadFileModel(url: recyclingImage));
     }
 
-    print('📋 Final carousel images count: ${carouselFileList.length}');
-    print('📋 Final recycling image: $finalRecyclingImage');
+    // Use ImageDisplayHelper to categorize images according to business rules
+    final imageSections = ImageDisplayHelper.categorizeImages(uploadFiles);
+
+    log('📋 ImageDisplayHelper results:');
+    log('  📷 Header: ${imageSections.headerImage}');
+    log('  🎠 Carousel: ${imageSections.carouselImages}');
+    log('  ♻️ Details: ${imageSections.productDetailsImage}');
+
+    // Convert carousel images to ProductFileEntity for compatibility
+    List<ProductFileEntity> carouselFileList =
+        imageSections.carouselImages
+            .map((url) => ProductFileEntity(url: url))
+            .toList();
 
     productFileList = carouselFileList;
 
@@ -110,13 +115,13 @@ class ScanProductDetailsViewPresentation extends ScanProductDetailsViewPresenter
       brand: brand.isNotEmpty ? brand : "Product Brand",
       instructions:
           description.isNotEmpty ? description : "No Instructions Given",
-      middleImages: carouselFileList, // Only carousel images, not header
-      lastImageUrl: finalRecyclingImage,
+      middleImages: carouselFileList,
+      lastImageUrl: imageSections.productDetailsImage,
       files: carouselFileList,
     );
 
-    // Store header image separately
-    headerImageUrl = finalHeaderImage;
+    // Store header image separately using ImageDisplayHelper result
+    headerImageUrl = imageSections.headerImage;
 
     // Reset carousel position when data changes
     productCarouselCurrent = 0;

@@ -14,7 +14,6 @@ class App extends StatelessWidget {
     return ShadApp.custom(
       appBuilder: (context) {
         return GetMaterialApp.router(
-          title: 'Trash4Business',
           debugShowCheckedModeBanner: false,
           getPages: AppPages.routes,
           initialBinding: SplashBinding(),
@@ -30,8 +29,9 @@ class App extends StatelessWidget {
           // Handle unknown routes securely
           unknownRoute: GetPage(
             name: '/notfound',
-            page: () =>
-                const Scaffold(body: Center(child: Text('Page not found'))),
+            page:
+                () =>
+                    const Scaffold(body: Center(child: Text('Page not found'))),
           ),
           builder: (context, child) {
             return ShadAppBuilder(child: child!);
@@ -47,10 +47,14 @@ class App extends StatelessWidget {
 
     // Define protected routes
     const protectedRoutes = [
+      AppRoutes.dashboardShell,
       AppRoutes.dashboard,
       AppRoutes.productManagement,
       AppRoutes.profile,
-      AppRoutes.rules,
+      AppRoutes.profileSettings,
+      AppRoutes.rewards,
+      AppRoutes.rulesV2,
+      AppRoutes.pendingTasks,
     ];
 
     final isProtectedRoute = protectedRoutes.any(

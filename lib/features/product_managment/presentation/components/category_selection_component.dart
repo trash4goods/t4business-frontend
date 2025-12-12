@@ -4,13 +4,13 @@ import '../../../../core/app/themes/app_text_styles.dart';
 
 class CategorySelectionComponent extends StatelessWidget {
   final List<String> availableCategories;
-  final List<String> selectedCategories;
-  final Function(List<String>) onSelectionChanged;
+  final String? selectedCategory;
+  final Function(String?) onSelectionChanged;
 
   const CategorySelectionComponent({
     super.key,
     required this.availableCategories,
-    required this.selectedCategories,
+    required this.selectedCategory,
     required this.onSelectionChanged,
   });
 
@@ -24,36 +24,84 @@ class CategorySelectionComponent extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: AppColors.fieldBorder),
       ),
-      child: Wrap(
-        spacing: 6,
-        runSpacing: 6,
-        children:
-            availableCategories.map((category) {
-              final isSelected = selectedCategories.contains(category);
-              return FilterChip(
-                label: Text(category),
-                selected: isSelected,
-                onSelected: (selected) {
-                  final updatedCategories = selectedCategories.toList();
-                  if (selected) {
-                    updatedCategories.add(category);
-                  } else {
-                    updatedCategories.remove(category);
-                  }
-                  onSelectionChanged(updatedCategories);
-                },
-                backgroundColor: AppColors.surface,
-                selectedColor: AppColors.primary.withOpacity(0.1),
-                checkmarkColor: AppColors.primary,
-                side: BorderSide(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Add "None" option to allow deselection
+          _buildCategoryOption(null, 'None'),
+          SizedBox(height: 8),
+          // Build category options
+          Wrap(
+            spacing: 6,
+            runSpacing: 6,
+            children:
+                availableCategories.map((category) {
+                  return _buildCategoryOption(category, category);
+                }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCategoryOption(String? categoryValue, String displayText) {
+    final isSelected = selectedCategory == categoryValue;
+
+    return InkWell(
+      onTap: () => onSelectionChanged(categoryValue),
+      borderRadius: BorderRadius.circular(20),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        decoration: BoxDecoration(
+          color:
+              isSelected
+                  ? AppColors.primary.withValues(alpha: 0.1)
+                  : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isSelected ? AppColors.primary : AppColors.fieldBorder,
+            width: isSelected ? 2 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Radio button indicator
+            Container(
+              width: 16,
+              height: 16,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
                   color: isSelected ? AppColors.primary : AppColors.fieldBorder,
+                  width: 2,
                 ),
-                labelStyle: AppTextStyles.labelMedium.copyWith(
-                  color: isSelected ? AppColors.primary : AppColors.textPrimary,
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                ),
-              );
-            }).toList(),
+                color: isSelected ? AppColors.primary : Colors.transparent,
+              ),
+              child:
+                  isSelected
+                      ? Center(
+                        child: Container(
+                          width: 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                        ),
+                      )
+                      : null,
+            ),
+            SizedBox(width: 8),
+            Text(
+              displayText,
+              style: AppTextStyles.labelMedium.copyWith(
+                color: isSelected ? AppColors.primary : AppColors.textPrimary,
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

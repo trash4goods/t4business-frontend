@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import '../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
 import '../controllers/implementation/rule.dart';
 import '../controllers/interface/rule.dart';
 import '../presenters/implementation/rule.dart';
@@ -15,7 +16,10 @@ class RulesBinding extends Bindings {
     
     // Register presenter with controller dependency
     Get.lazyPut<RulesPresenterInterface>(
-      () => RulesPresenterImpl(Get.find<RulesControllerInterface>()),
+      () => RulesPresenterImpl(
+        controller: Get.find<RulesControllerInterface>(),
+        dashboardShellController: Get.find<DashboardShellControllerInterface>(),
+      ),
       fenix: true,
     );
   }

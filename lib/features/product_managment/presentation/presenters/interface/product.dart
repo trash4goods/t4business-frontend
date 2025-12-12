@@ -1,15 +1,25 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../data/models/product.dart';
+import 'package:t4g_for_business/features/auth/data/models/user_auth/user_auth_model.dart';
+import '../../../data/models/barcode/index.dart';
 
 abstract class ProductsPresenterInterface extends GetxController {
+  // global from parent DashboardShell
+  GlobalKey<ScaffoldState> get scaffoldKey;
+  RxString get currentRoute;
+  void onNavigate(String route);
+  void onLogout();
+  void onToggle();
   // Observable properties
-  RxList<ProductModel> get products;
-  RxList<ProductModel> get filteredProducts;
+  RxList<BarcodeResultModel> get products;
+  RxList<BarcodeResultModel> get filteredProducts;
   RxList<String> get categories;
   RxString get selectedCategory;
   RxBool get isLoading;
   RxString get searchQuery;
+  UserAuthModel? get user;
 
   // Form properties for create/edit
   RxString get formTitle;
@@ -19,7 +29,7 @@ abstract class ProductsPresenterInterface extends GetxController {
   RxList<String> get formCategories;
   RxBool get isFormValid;
   RxBool get isCreating;
-  Rx<ProductModel?> get editingProduct;
+  Rx<BarcodeResultModel?> get editingProduct;
 
   // In ProductsPresenterInterface, add:
   RxString get formHeaderImage;
@@ -42,6 +52,9 @@ abstract class ProductsPresenterInterface extends GetxController {
   RxString get newItemBarcode;
   TextEditingController get newItemTitleController;
   TextEditingController get newItemBarcodeController;
+
+  // Barcode controller for single barcode input
+  TextEditingController get barcodeController;
 
   // Edit item properties
   RxInt get editingItemIndex;
@@ -76,7 +89,7 @@ abstract class ProductsPresenterInterface extends GetxController {
   void filterProducts(String category);
   void searchProducts(String query);
   void startCreate();
-  void startEdit(ProductModel product);
+  void startEdit(BarcodeResultModel product);
   void updateFormField(String field, dynamic value);
   Future<void> saveProduct();
   Future<void> deleteProduct(int id);
@@ -91,4 +104,52 @@ abstract class ProductsPresenterInterface extends GetxController {
   void addLinkedReward(String rewardId);
   void removeLinkedReward(String rewardId);
   void showRewardsSelectionDialog();
+
+  // New methods for improvements
+  RxString get viewMode; // 'grid' or 'list'
+  void toggleViewMode(String mode);
+  Future<void> duplicateProduct(BarcodeResultModel product);
+  Future<void> uploadCsvFile({Uint8List? fileBytes, String? fileName});
+  
+  // CSV upload dialog state
+  RxString? get csvFileName;
+  RxString? get csvFilePath;
+  Rx<Uint8List?> get csvFileBytes;
+  RxBool get isCsvUploading;
+  RxBool get isDownloadingTemplate;
+  RxBool get hasDownloadedTemplate;
+  RxBool get hasSelectedCsvFile;
+  
+  // CSV upload methods
+  Future<void> downloadCsvTemplate();
+  Future<void> pickCsvFile();
+  void clearCsvSelection();
+  
+  // Pagination methods
+  RxInt get currentPage;
+  RxInt get totalCount; 
+  RxBool get hasNextPage;
+  RxInt get perPage;
+  Future<void> goToPage(int page);
+  Future<void> refreshProducts();
+  
+  // Pagination helper methods
+  int getTotalPages();
+  bool getHasPrevious();
+  int getSafeCurrentPage();
+  
+  // Image conversion loading states
+  RxBool get isConvertingHeaderImage;
+  RxBool get isConvertingCarouselImage;
+  RxBool get isConvertingRecyclingImage;
+  RxBool get canSaveProduct;
+  
+  // Enhanced validation methods
+  bool get isTitleValid;
+  bool get isBrandValid;
+  bool get isDescriptionValid;
+  bool get isBarcodeValid;
+  bool get isCategoryValid;
+  bool get hasRequiredImages;
+  String get validationMessage;
 }

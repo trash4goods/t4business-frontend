@@ -10,4 +10,11 @@ class AppConstants {
   static const String productsRoute = '/products';
   static const String profileRoute = '/profile';
   static const String createProductRoute = '/products/create';
+
+  // LOCAL STORAGE KEYS
+  static const String tokenKey = 'TOKEN';
+  static const String t4gTokenKey = 'T4G_TOKEN';
+
+  // HIVE BOXES KEYS
+  static const String userAuthBoxKey = 'USER_AUTH';
 }
