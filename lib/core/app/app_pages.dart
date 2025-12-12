@@ -28,6 +28,7 @@ class AppPages {
     // Splash route - ALWAYS accessible and handles authentication checks
     // This is critical for security - all app access should go through splash first
     GetPage(
+      title: 'Trash4Business',
       name: AppRoutes.splash,
       page: () => const SplashView(),
       binding: SplashBinding(),
@@ -37,6 +38,7 @@ class AppPages {
 
     // Guest-only route - protected by AppMiddleware
     GetPage(
+      title: 'Trash4Business - Login',
       name: AppRoutes.login,
       page: () => const LoginView(),
       binding: LoginBinding(),
@@ -47,6 +49,7 @@ class AppPages {
 
     // Protected route - requires authentication
     GetPage(
+      title: 'Trash4Business - Dashboard',
       name: AppRoutes.dashboard,
       page: () => const DashboardView(),
       binding: DashboardBinding(),
@@ -58,6 +61,7 @@ class AppPages {
     // Additional protected routes
     // Products management route - requires authentication
     GetPage(
+      title: 'Trash4Business - Products Management',
       name: AppRoutes.productManagement,
       page: () => const ProductsPage(), // import at top if not present
       binding: ProductsBinding(),
@@ -67,6 +71,7 @@ class AppPages {
     ),
     // Marketplace products route - requires authentication
     GetPage(
+      title: 'Trash4Business - Marketplace Products',
       name: AppRoutes.marketplaceProducts,
       page: () => const marketplace_view.RewardsPage(),
       binding: marketplace_binding.MarketplaceProductsBinding(),
@@ -76,6 +81,7 @@ class AppPages {
     ),
     // Rules route - requires authentication
     GetPage(
+      title: 'Trash4Business - Rules',
       name: AppRoutes.rules,
       page: () => const rules_view.RulesPage(),
       binding: rules_binding.RulesBinding(),
@@ -86,6 +92,7 @@ class AppPages {
 
     // Profile route - requires authentication
     GetPage(
+      title: 'Trash4Business - Profile',
       name: AppRoutes.profile,
       page: () => const ProfileView(),
       binding: ProfileBinding(),
@@ -96,22 +103,22 @@ class AppPages {
 
     // Guest routes for future implementation
     GetPage(
+      title: 'Trash4Business - Signup',
       name: AppRoutes.signup,
-      page:
-          () => const Scaffold(
-            body: Center(child: Text('Signup Page - Coming Soon')),
-          ),
+      page: () => const Scaffold(
+        body: Center(child: Text('Signup Page - Coming Soon')),
+      ),
       preventDuplicates: true,
       participatesInRootNavigator: true,
       middlewares: [AppMiddleware()],
     ),
 
     GetPage(
+      title: 'Trash4Business - Forgot Password',
       name: AppRoutes.forgotPassword,
-      page:
-          () => const Scaffold(
-            body: Center(child: Text('Forgot Password - Coming Soon')),
-          ),
+      page: () => const Scaffold(
+        body: Center(child: Text('Forgot Password - Coming Soon')),
+      ),
       preventDuplicates: true,
       participatesInRootNavigator: true,
       middlewares: [AppMiddleware()],
@@ -119,6 +126,7 @@ class AppPages {
 
     // Root route - redirect to splash for proper flow
     GetPage(
+      title: 'Trash4Business',
       name: '/',
       page: () => const SplashView(),
       binding: SplashBinding(),
