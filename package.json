@@ -1,0 +1,24 @@
+{
+  "name": "t4g-for-business",
+  "version": "1.0.0",
+  "description": "T4G for Business - Flutter Web Application",
+  "scripts": {
+    "build": "flutter build web --no-tree-shake-icons",
+    "deploy": "npm run build && firebase deploy --only hosting",
+    "deploy:message": "npm run build && firebase deploy --only hosting -m",
+    "quick-deploy": "./quick-deploy.sh",
+    "full-deploy": "./deploy.sh",
+    "serve": "firebase serve --only hosting",
+    "clean": "flutter clean && flutter pub get"
+  },
+  "dependencies": {
+    "firebase": "^11.8.1"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/t4g-for-business.git"
+  },
+  "author": "T4G Team",
+  "license": "MIT"
+}

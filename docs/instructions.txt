@@ -1,0 +1,414 @@
+Core Architecture Guidelines
+Project Structure
+Follow this exact folder structure for all features:
+
+text
+lib/
+├── core/
+│   ├── app/
+│   │   ├── constants/         # AppConstants, Enums
+│   │   ├── themes/            # AppColors, AppTextStyles
+│   │   └── routes/            # AppRoutes, AppPages
+│   ├── services/              # NavigationService, SnackbarService
+│   └── widgets/               # Reusable UI components
+├── features/
+│   └── [feature_name]/
+│       ├── domain/
+│       │   ├── entities/      # Business objects
+│       │   └── use_cases/     # Business logic
+│           │   ├── interfaces/    # Abstract Usecase contracts
+│           │   └── implementations/ # Usecase implementations
+│       ├── data/
+│       │   ├── models/        # Data transfer objects
+│       │   ├── datasources/   # External data access
+│       │   ├── repositories/  # Abstract contracts
+│           │   ├── interfaces/    # Abstract Repository contracts
+│           │   └── implementations/ # Repository implementations
+│       └── presentation/
+│           ├── bindings/      # Individual feature bindings
+│           ├── controllers/
+│           │   ├── interfaces/    # Abstract controller contracts
+│           │   └── implementations/ # Controller implementations
+│           ├── presenters/
+│           │   ├── interfaces/    # Abstract presenter contracts (extend GetxController)
+│           │   └── implementations/ # Presenter implementations
+│           └── views/         # UI components
+└── utils/
+    ├── extensions/            # Dart extensions
+    └── helpers/               # Utility functions
+Feature Organization Strategy
+Group Related Features:
+
+text
+features/
+├── auth/                      # Login, signup, reset password
+│   ├── domain/
+│   ├── data/
+│   └── presentation/
+│       ├── bindings/
+│       │   ├── login_binding.dart
+│       │   ├── signup_binding.dart
+│       │   └── reset_password_binding.dart
+│       ├── controllers/
+│       │   ├── interfaces/
+│       │   │   ├── login_controller_interface.dart
+│       │   │   ├── signup_controller_interface.dart
+│       │   │   └── reset_password_controller_interface.dart
+│       │   └── implementations/
+│       │       ├── login_controller_impl.dart
+│       │       ├── signup_controller_impl.dart
+│       │       └── reset_password_controller_impl.dart
+│       ├── presenters/
+│       │   ├── interfaces/
+│       │   │   ├── login_presenter_interface.dart
+│       │   │   ├── signup_presenter_interface.dart
+│       │   │   └── reset_password_presenter_interface.dart
+│       │   └── implementations/
+│       │       ├── login_presenter_impl.dart
+│       │       ├── signup_presenter_impl.dart
+│       │       └── reset_password_presenter_impl.dart
+│       └── views/
+│           ├── login_view.dart
+│           ├── signup_view.dart
+│           └── reset_password_view.dart
+├── product_management/        # Create & manage products
+├── dashboard/                 # Analytics & overview
+└── profile/                   # User profile & settings
+MVVM Pattern Implementation
+1. CustomGetView Base Class
+dart
+abstract class CustomGetView<Controller, Presenter extends GetxController> 
+    extends GetView<Presenter> {
+  const CustomGetView({super.key});
+
+  Controller get businessController => Get.find<Controller>();
+  Presenter get presenter => controller;
+
+  @override
+  Widget build(BuildContext context) {
+    return buildView(context);
+  }
+
+  @protected
+  Widget buildView(BuildContext context);
+}
+2. Interface-Implementation Pattern
+For every feature action (login, signup, etc.), create:
+
+[ActionName]ControllerInterface (abstract class)
+
+[ActionName]ControllerImpl (implementation)
+
+[ActionName]PresenterInterface (abstract class extending GetxController)
+
+[ActionName]PresenterImpl (implementation)
+
+3. Separation of Concerns
+Controller: Pure business logic functions, no observables
+
+Presenter: Observable state management, extends GetxController
+
+UseCase: Single business action encapsulation
+
+Repository: Data access abstraction
+
+DataSource: External system communication
+
+Code Standards & Best Practices
+Null Safety Rules
+Always use nullable types (String?) when values can be null
+
+Use null-aware operators (?., ??, ??=)
+
+Validate all user inputs and external data
+
+Use required keyword for mandatory parameters
+
+Handle null cases explicitly in factory constructors
+
+GetX State Management
+dart
+// Correct observable usage
+final _isLoading = false.obs;
+bool get isLoading => _isLoading.value;
+set isLoading(bool value) => _isLoading.value = value;
+
+// Correct dependency injection
+Get.lazyPut<ControllerInterface>(() => ControllerImpl(), fenix: true);
+Constants and Styling
+All colors in core/app/themes/app_colors.dart
+
+All text styles in core/app/themes/app_text_styles.dart
+
+All routes in core/app/routes/app_routes.dart
+
+Use private constructors for utility classes: ClassName._();
+
+Error Handling
+dart
+try {
+  final result = await repository.getData();
+  return result;
+} catch (e) {
+  SnackbarService.showError('Failed to load data');
+  return null;
+}
+Firebase Integration Guidelines
+Authentication Rules
+Google Sign-In: Validate account exists in allowed list
+
+Email/Password: Standard Firebase auth
+
+Manual account creation by dev team only
+
+Proper error handling for unauthorized access
+
+Data Models
+dart
+class ProductModel {
+  final int id;
+  final String title;
+  final String description;
+  final String image;
+  final String barcode;
+  final String quantity;
+  final List<String> category;
+
+  const ProductModel({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.image,
+    required this.barcode,
+    required this.quantity,
+    required this.category,
+  });
+}
+Individual Binding Strategy
+Create Individual Bindings for Each Feature Action
+dart
+// features/auth/presentation/bindings/login_binding.dart
+class LoginBinding implements Bindings {
+  @override
+  void dependencies() {
+    // Shared dependencies (if not already registered)
+    if (!Get.isRegistered<AuthRepositoryInterface>()) {
+      Get.lazyPut<AuthRepositoryInterface>(() => AuthRepositoryImpl());
+    }
+    
+    // Individual dependencies
+    Get.lazyPut<LoginControllerInterface>(
+      () => LoginControllerImpl(Get.find<AuthRepositoryInterface>()),
+    );
+    
+    Get.lazyPut<LoginPresenterInterface>(
+      () => LoginPresenterImpl(),
+    );
+  }
+}
+Testing Requirements
+Unit Testing Structure
+text
+test/
+├── unit/
+│   ├── domain/
+│   │   ├── entities/
+│   │   └── use_cases/
+│   ├── data/
+│   │   ├── repositories/
+│   │   └── datasources/
+│   └── presentation/
+│       ├── controllers/
+│       │   ├── login_controller_test.dart
+│       │   ├── signup_controller_test.dart
+│       │   └── reset_password_controller_test.dart
+│       └── presenters/
+│           ├── login_presenter_test.dart
+│           ├── signup_presenter_test.dart
+│           └── reset_password_presenter_test.dart
+├── widget/
+│   └── features/
+│       └── [feature_name]/
+│           └── views/
+└── integration/
+    └── flows/
+Test Templates
+Unit Test Example:
+
+dart
+void main() {
+  late LoginController controller;
+  late MockAuthRepository mockRepository;
+
+  setUp(() {
+    mockRepository = MockAuthRepository();
+    controller = LoginControllerImpl(mockRepository);
+  });
+
+  test('should return success when login completes', () async {
+    // Arrange
+    when(mockRepository.login(any, any)).thenAnswer((_) async => testUser);
+    
+    // Act
+    final result = await controller.login('test@email.com', 'password');
+    
+    // Assert
+    expect(result, isA<UserEntity>());
+    verify(mockRepository.login('test@email.com', 'password')).called(1);
+  });
+}
+Widget Test Example:
+
+dart
+void main() {
+  testWidgets('LoginView displays loading state', (tester) async {
+    final mockPresenter = MockLoginPresenter();
+    when(mockPresenter.isLoading).thenReturn(true);
+    
+    await tester.pumpWidget(
+      GetMaterialApp(
+        home: LoginView(),
+        initialBinding: BindingsBuilder(() {
+          Get.put<LoginPresenterInterface>(mockPresenter);
+          Get.put<LoginControllerInterface>(MockLoginController());
+        }),
+      ),
+    );
+    
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+  });
+}
+Perfect AI Prompt Template
+text
+Context: I'm working on a Flutter web application using GetX state management and Clean Architecture. Follow the T4G AI instructions exactly.
+
+Task: [Describe specific feature/component to implement]
+
+Requirements:
+1. Follow the exact folder structure defined in AI instructions
+2. Implement MVVM pattern with CustomGetView
+3. Create individual interface-implementation pairs for each feature action
+4. Use proper null-safety throughout
+5. Follow GetX best practices for state management
+6. Place all constants in core/app/themes/
+7. Implement proper error handling with SnackbarService
+8. Create individual bindings for each feature action
+9. Create corresponding unit and widget tests
+10. Ensure zero errors in PROBLEMS console
+11. Use Clean Architecture layers: domain, data, presentation
+12. Group related features under single feature modules
+13. Create individual controllers/presenters for each specific action
+
+Additional Context: [Provide any specific business logic or UI requirements]
+
+Expected Output:
+- Complete implementation with all required files
+- Individual bindings for each feature action
+- Proper dependency injection configuration
+- Comprehensive test coverage
+- Documentation for complex logic
+- Null-safe code throughout
+- Individual interface-implementation pairs
+Quality Assurance Checklist
+Before Committing Code
+ Zero errors in PROBLEMS console
+
+ All imports resolved correctly
+
+ Null-safety compliance verified
+
+ Individual bindings properly configured
+
+ Unit tests written and passing for each controller/presenter
+
+ Widget tests covering main scenarios
+
+ Constants used instead of hardcoded values
+
+ Proper error handling implemented
+
+ Individual interface-implementation pattern followed
+
+ Documentation added for complex logic
+
+Code Review Points
+ Individual controllers/presenters for each action
+
+ Interface-implementation pattern followed
+
+ Separation of concerns maintained
+
+ Observable variables only in presenters
+
+ Business logic only in controllers/use cases
+
+ Individual dependency injection per feature action
+
+ Consistent naming conventions
+
+ Reusable components utilized
+
+ Performance optimizations applied
+
+Common Patterns to Follow
+Navigation
+dart
+NavigationService.to(AppRoutes.dashboard);
+NavigationService.offAll(AppRoutes.login);
+Snackbar Usage
+dart
+SnackbarService.showSuccess('Operation completed');
+SnackbarService.showError('Failed to load data', 
+  actionLabel: 'Retry', 
+  onActionPressed: () => retry());
+Observable State
+dart
+// In Presenter
+final _products = <Product>[].obs;
+List<Product> get products => _products;
+void updateProducts(List<Product> newProducts) => _products.value = newProducts;
+
+// In View
+Obx(() => ListView.builder(
+  itemCount: presenter.products.length,
+  itemBuilder: (context, index) => ProductCard(presenter.products[index]),
+))
+Individual Dependency Injection
+dart
+class LoginBinding implements Bindings {
+  @override
+  void dependencies() {
+    Get.lazyPut<AuthDataSource>(() => FirebaseAuthDataSource());
+    Get.lazyPut<AuthRepository>(() => AuthRepositoryImpl(Get.find()));
+    Get.lazyPut<LoginUseCase>(() => LoginUseCaseImpl(Get.find()));
+    Get.lazyPut<LoginControllerInterface>(() => LoginControllerImpl(Get.find()));
+    Get.lazyPut<LoginPresenterInterface>(() => LoginPresenterImpl());
+  }
+}
+Performance Guidelines
+Use Get.lazyPut() for lazy initialization
+
+Implement fenix: true for controllers that need recreation
+
+Use const constructors wherever possible
+
+Optimize image loading and caching
+
+Implement proper disposal in GetxController.onClose()
+
+Use Obx() instead of GetBuilder() for reactive updates
+
+Create individual bindings to avoid loading unnecessary dependencies
+
+Security Considerations
+Validate all user inputs
+
+Implement proper Firebase security rules
+
+Use environment variables for sensitive data
+
+Implement proper authentication checks
+
+Sanitize data before display
+
+Use HTTPS for all network requests
