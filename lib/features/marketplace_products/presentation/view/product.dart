@@ -14,16 +14,16 @@ import '../components/image_upload_component.dart';
 import '../components/form_field_component.dart';
 import '../components/category_selection_component.dart';
 import 'mobile_preview_fixed.dart';
+import 'dart:html' as html;
 
-class RewardsPage
-    extends
-        CustomGetView<RewardsControllerInterface, RewardsPresenterInterface> {
+class RewardsPage extends CustomGetView<RewardsControllerInterface,
+    RewardsPresenterInterface> {
   const RewardsPage({super.key});
 
   @override
   Widget buildView(BuildContext context) {
     final hasScaffoldAncestor = Scaffold.maybeOf(context) != null;
-
+    html.document.title = 'Trash4Business - Products';
     return LayoutBuilder(
       builder: (context, constraints) {
         final isMobile = constraints.maxWidth < 768;
@@ -166,7 +166,6 @@ class RewardsPage
 
         return ShadCard(
           padding: EdgeInsets.all(isVerySmall ? 12 : 16),
-
           child: _buildHeaderContent(isVerySmall, isSmall, isMedium),
         );
       },
@@ -235,19 +234,18 @@ class RewardsPage
                       ? AppTextStyles.headlineMedium
                       : AppTextStyles.headlineLarge))
               .copyWith(
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
+          ),
         ),
         SizedBox(height: 2),
         Text(
           isVerySmall
               ? 'Manage rewards linked to recycling rules'
               : 'Create and manage rewards linked to recycling rules',
-          style: (isVerySmall
-                  ? AppTextStyles.bodySmall
-                  : AppTextStyles.bodyMedium)
-              .copyWith(color: AppColors.textSecondary),
+          style:
+              (isVerySmall ? AppTextStyles.bodySmall : AppTextStyles.bodyMedium)
+                  .copyWith(color: AppColors.textSecondary),
         ),
       ],
     );
@@ -296,16 +294,15 @@ class RewardsPage
                       ? AppTextStyles.titleSmall
                       : AppTextStyles.titleMedium)
                   .copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
             Text(
               label,
-              style: (isSmall
-                      ? AppTextStyles.labelSmall
-                      : AppTextStyles.bodySmall)
-                  .copyWith(color: AppColors.textSecondary),
+              style:
+                  (isSmall ? AppTextStyles.labelSmall : AppTextStyles.bodySmall)
+                      .copyWith(color: AppColors.textSecondary),
             ),
           ],
         ),
@@ -336,7 +333,6 @@ class RewardsPage
 
         return ShadCard(
           padding: EdgeInsets.all(16),
-
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -360,13 +356,12 @@ class RewardsPage
                     child: Obx(
                       () => ShadSelect<String>(
                         placeholder: const Text('All Categories'),
-                        initialValue:
-                            presenter.selectedCategory.value.isEmpty
-                                ? null
-                                : presenter.selectedCategory.value,
+                        initialValue: presenter.selectedCategory.value.isEmpty
+                            ? null
+                            : presenter.selectedCategory.value,
                         selectedOptionBuilder: (context, value) => Text(value),
-                        onChanged:
-                            (value) => presenter.filterRewards(value ?? ''),
+                        onChanged: (value) =>
+                            presenter.filterRewards(value ?? ''),
                         options: [
                           const ShadOption(
                             value: '',
@@ -587,9 +582,9 @@ class RewardsPage
                                           ? AppTextStyles.titleMedium
                                           : AppTextStyles.titleLarge))
                                   .copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -601,12 +596,11 @@ class RewardsPage
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color:
-                                    (reward.canCheckout ?? true)
-                                        ? AppColors.success.withOpacity(0.1)
-                                        : AppColors.textSecondary.withOpacity(
-                                          0.1,
-                                        ),
+                                color: (reward.canCheckout ?? true)
+                                    ? AppColors.success.withOpacity(0.1)
+                                    : AppColors.textSecondary.withOpacity(
+                                        0.1,
+                                      ),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -614,10 +608,9 @@ class RewardsPage
                                     ? 'Active'
                                     : 'Inactive',
                                 style: AppTextStyles.labelSmall.copyWith(
-                                  color:
-                                      (reward.canCheckout ?? true)
-                                          ? AppColors.success
-                                          : AppColors.textSecondary,
+                                  color: (reward.canCheckout ?? true)
+                                      ? AppColors.success
+                                      : AppColors.textSecondary,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -654,10 +647,9 @@ class RewardsPage
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
-                                fontSize:
-                                    isVerySmallCard
-                                        ? 10
-                                        : (isSmallCard ? 11 : null),
+                                fontSize: isVerySmallCard
+                                    ? 10
+                                    : (isSmallCard ? 11 : null),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -802,10 +794,9 @@ class RewardsPage
     Color? color,
   }) {
     final buttonColor = color ?? AppColors.textPrimary;
-    final borderColor =
-        color == AppColors.error
-            ? AppColors.error.withOpacity(0.3)
-            : AppColors.fieldBorder;
+    final borderColor = color == AppColors.error
+        ? AppColors.error.withOpacity(0.3)
+        : AppColors.fieldBorder;
 
     return OutlinedButton(
       onPressed: onPressed,
@@ -864,22 +855,19 @@ class RewardsPage
     if (imageUrl != null && imageUrl.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-        child:
-            imageUrl.contains('http')
-                ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) =>
-                          _buildRewardImagePlaceholder(),
-                )
-                : Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) =>
-                          _buildRewardImagePlaceholder(),
-                ),
+        child: imageUrl.contains('http')
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildRewardImagePlaceholder(),
+              )
+            : Image.asset(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildRewardImagePlaceholder(),
+              ),
       );
     } else {
       return _buildRewardImagePlaceholder();
@@ -996,7 +984,6 @@ class RewardsPage
   Widget _buildFormHeader() {
     return ShadCard(
       padding: EdgeInsets.all(16),
-
       child: Row(
         children: [
           ShadButton.ghost(
@@ -1040,18 +1027,17 @@ class RewardsPage
                       presenter.isFormValid.value && !presenter.isLoading.value
                           ? () => presenter.saveReward()
                           : null,
-                  child:
-                      presenter.isLoading.value
-                          ? SizedBox(
-                            width: 16,
-                            height: 16,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                          : Text(
-                            presenter.editingReward.value != null
-                                ? 'Update Reward'
-                                : 'Create Reward',
-                          ),
+                  child: presenter.isLoading.value
+                      ? SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Text(
+                          presenter.editingReward.value != null
+                              ? 'Update Reward'
+                              : 'Create Reward',
+                        ),
                 ),
               ),
             ],
@@ -1092,8 +1078,8 @@ class RewardsPage
               () => ShadInput(
                 placeholder: Text('Describe your reward'),
                 initialValue: presenter.formDescription.value,
-                onChanged:
-                    (value) => presenter.updateFormField('description', value),
+                onChanged: (value) =>
+                    presenter.updateFormField('description', value),
                 maxLines: 3,
               ),
             ),
@@ -1136,8 +1122,8 @@ class RewardsPage
               () => ShadInput(
                 placeholder: Text('13-digit barcode'),
                 initialValue: presenter.formBarcode.value,
-                onChanged:
-                    (value) => presenter.updateFormField('barcode', value),
+                onChanged: (value) =>
+                    presenter.updateFormField('barcode', value),
               ),
             ),
           ),
@@ -1166,9 +1152,8 @@ class RewardsPage
                 children: [
                   ShadSwitch(
                     value: presenter.formCanCheckout.value,
-                    onChanged:
-                        (value) =>
-                            presenter.updateFormField('canCheckout', value),
+                    onChanged: (value) =>
+                        presenter.updateFormField('canCheckout', value),
                   ),
                   SizedBox(width: 8),
                   Text(
@@ -1317,8 +1302,8 @@ class RewardsPage
       () => RewardCategorySelectionComponent(
         availableCategories: presenter.categories.toList(),
         selectedCategories: presenter.formCategories.toList(),
-        onSelectionChanged:
-            (categories) => presenter.updateFormField('categories', categories),
+        onSelectionChanged: (categories) =>
+            presenter.updateFormField('categories', categories),
       ),
     );
   }
@@ -1371,64 +1356,61 @@ class RewardsPage
               ],
             ),
             SizedBox(height: 12),
-
             if (presenter.selectedRulesData.isNotEmpty)
               ShadCard(
                 padding: EdgeInsets.zero,
                 child: Column(
-                  children:
-                      presenter.selectedRulesData.map((rule) {
-                        return Container(
-                          padding: EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            border: Border(
-                              bottom:
-                                  presenter.selectedRulesData.last != rule
-                                      ? BorderSide(color: AppColors.outline)
-                                      : BorderSide.none,
+                  children: presenter.selectedRulesData.map((rule) {
+                    return Container(
+                      padding: EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        border: Border(
+                          bottom: presenter.selectedRulesData.last != rule
+                              ? BorderSide(color: AppColors.outline)
+                              : BorderSide.none,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: _getPriorityColor(rule.priority),
+                              shape: BoxShape.circle,
                             ),
                           ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 8,
-                                height: 8,
-                                decoration: BoxDecoration(
-                                  color: _getPriorityColor(rule.priority),
-                                  shape: BoxShape.circle,
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  rule.title,
+                                  style: AppTextStyles.bodyMedium.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.textPrimary,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      rule.title,
-                                      style: AppTextStyles.bodyMedium.copyWith(
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.textPrimary,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${rule.recycleCount}x recycle • ${rule.categories.join(", ")}',
-                                      style: AppTextStyles.bodySmall.copyWith(
-                                        color: AppColors.textSecondary,
-                                      ),
-                                    ),
-                                  ],
+                                Text(
+                                  '${rule.recycleCount}x recycle • ${rule.categories.join(", ")}',
+                                  style: AppTextStyles.bodySmall.copyWith(
+                                    color: AppColors.textSecondary,
+                                  ),
                                 ),
-                              ),
-                              ShadButton.ghost(
-                                onPressed:
-                                    () => presenter.removeLinkedRule(rule.id),
-                                size: ShadButtonSize.sm,
-                                child: Icon(Icons.close, size: 16),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        );
-                      }).toList(),
+                          ShadButton.ghost(
+                            onPressed: () =>
+                                presenter.removeLinkedRule(rule.id),
+                            size: ShadButtonSize.sm,
+                            child: Icon(Icons.close, size: 16),
+                          ),
+                        ],
+                      ),
+                    );
+                  }).toList(),
                 ),
               )
             else
@@ -1526,95 +1508,92 @@ class RewardsPage
   void _showFilterDialog() {
     showShadDialog(
       context: Get.context!,
-      builder:
-          (context) => ShadDialog(
-            title: Text('Advanced Filters'),
-            description: Text('Filter rewards by various criteria'),
-            actions: [
-              ShadButton.outline(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Close'),
+      builder: (context) => ShadDialog(
+        title: Text('Advanced Filters'),
+        description: Text('Filter rewards by various criteria'),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Close'),
+          ),
+        ],
+        child: SizedBox(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ShadSelect<String>(
+                placeholder: Text('Filter by Status'),
+                selectedOptionBuilder: (context, value) => Text(value),
+                options: [
+                  ShadOption(value: 'all', child: Text('All Status')),
+                  ShadOption(value: 'active', child: Text('Active')),
+                  ShadOption(value: 'inactive', child: Text('Inactive')),
+                ],
+                onChanged: (value) => presenter.onFilterChanged(value ?? 'all'),
               ),
-            ],
-            child: SizedBox(
-              width: 400,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ShadSelect<String>(
-                    placeholder: Text('Filter by Status'),
-                    selectedOptionBuilder: (context, value) => Text(value),
-                    options: [
-                      ShadOption(value: 'all', child: Text('All Status')),
-                      ShadOption(value: 'active', child: Text('Active')),
-                      ShadOption(value: 'inactive', child: Text('Inactive')),
-                    ],
-                    onChanged:
-                        (value) => presenter.onFilterChanged(value ?? 'all'),
-                  ),
-                  SizedBox(height: 16),
-                  ShadSelect<String>(
-                    placeholder: Text('Filter by Category'),
-                    selectedOptionBuilder: (context, value) => Text(value),
-                    options: [
-                      ShadOption(value: '', child: Text('All Categories')),
-                      ...presenter.categories.map(
-                        (category) =>
-                            ShadOption(value: category, child: Text(category)),
-                      ),
-                    ],
-                    onChanged: (value) => presenter.filterRewards(value ?? ''),
+              SizedBox(height: 16),
+              ShadSelect<String>(
+                placeholder: Text('Filter by Category'),
+                selectedOptionBuilder: (context, value) => Text(value),
+                options: [
+                  ShadOption(value: '', child: Text('All Categories')),
+                  ...presenter.categories.map(
+                    (category) =>
+                        ShadOption(value: category, child: Text(category)),
                   ),
                 ],
+                onChanged: (value) => presenter.filterRewards(value ?? ''),
               ),
-            ),
+            ],
           ),
+        ),
+      ),
     );
   }
 
   void _showSortDialog() {
     showShadDialog(
       context: Get.context!,
-      builder:
-          (context) => ShadDialog(
-            title: Text('Sort Options'),
-            description: Text('Choose how to sort the rewards'),
-            actions: [
-              ShadButton.outline(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Close'),
+      builder: (context) => ShadDialog(
+        title: Text('Sort Options'),
+        description: Text('Choose how to sort the rewards'),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Close'),
+          ),
+        ],
+        child: SizedBox(
+          width: 300,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ListTile(
+                title: Text('Date Created'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  // Implement sort logic
+                },
+              ),
+              ListTile(
+                title: Text('Title (A-Z)'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  // Implement sort logic
+                },
+              ),
+              ListTile(
+                title: Text('Status'),
+                onTap: () {
+                  Navigator.of(context).pop();
+                  // Implement sort logic
+                },
               ),
             ],
-            child: SizedBox(
-              width: 300,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  ListTile(
-                    title: Text('Date Created'),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      // Implement sort logic
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Title (A-Z)'),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      // Implement sort logic
-                    },
-                  ),
-                  ListTile(
-                    title: Text('Status'),
-                    onTap: () {
-                      Navigator.of(context).pop();
-                      // Implement sort logic
-                    },
-                  ),
-                ],
-              ),
-            ),
           ),
+        ),
+      ),
     );
   }
 
@@ -1625,26 +1604,25 @@ class RewardsPage
   void _deleteReward(dynamic reward) {
     showShadDialog(
       context: Get.context!,
-      builder:
-          (context) => ShadDialog(
-            title: Text('Delete Reward'),
-            description: Text(
-              'Are you sure you want to delete "${reward.title}"? This action cannot be undone.',
-            ),
-            actions: [
-              ShadButton.outline(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Cancel'),
-              ),
-              ShadButton.destructive(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  presenter.deleteReward(reward.id);
-                },
-                child: Text('Delete'),
-              ),
-            ],
+      builder: (context) => ShadDialog(
+        title: Text('Delete Reward'),
+        description: Text(
+          'Are you sure you want to delete "${reward.title}"? This action cannot be undone.',
+        ),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('Cancel'),
           ),
+          ShadButton.destructive(
+            onPressed: () {
+              Navigator.of(context).pop();
+              presenter.deleteReward(reward.id);
+            },
+            child: Text('Delete'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -1708,10 +1686,9 @@ class RewardsPage
       right: 16,
       child: ShadButton(
         onPressed: () => presenter.startCreate(),
-        size:
-            isMobile
-                ? ShadButtonSize.sm
-                : (isTablet ? ShadButtonSize.regular : ShadButtonSize.lg),
+        size: isMobile
+            ? ShadButtonSize.sm
+            : (isTablet ? ShadButtonSize.regular : ShadButtonSize.lg),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [

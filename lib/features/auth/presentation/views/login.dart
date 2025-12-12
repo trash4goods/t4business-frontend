@@ -11,6 +11,7 @@ import '../../../../core/widgets/gradient_background.dart';
 import '../../../../core/widgets/app_logo.dart';
 import '../controllers/interface/login.controller.dart';
 import '../presenters/interface/login.presenter.dart';
+import 'dart:html' as html;
 
 class LoginView
     extends CustomGetView<LoginControllerInterface, LoginPresenterInterface> {
@@ -18,6 +19,7 @@ class LoginView
 
   @override
   Widget buildView(BuildContext context) {
+    html.document.title = 'Trash4Business - Login';
     return Scaffold(
       body: GradientBackground(
         child: SafeArea(
@@ -91,10 +93,9 @@ class LoginView
                 ],
               ),
               child: Obx(
-                () =>
-                    presenter.isForgotPasswordMode
-                        ? _buildForgotPasswordContent(context)
-                        : _buildLoginFormContent(context),
+                () => presenter.isForgotPasswordMode
+                    ? _buildForgotPasswordContent(context)
+                    : _buildLoginFormContent(context),
               ),
             ),
           ],
@@ -195,10 +196,9 @@ class LoginView
         ),
       ),
       child: Obx(
-        () =>
-            presenter.isForgotPasswordMode
-                ? _buildForgotPasswordContent(context)
-                : _buildLoginFormContent(context),
+        () => presenter.isForgotPasswordMode
+            ? _buildForgotPasswordContent(context)
+            : _buildLoginFormContent(context),
       ),
     );
   }

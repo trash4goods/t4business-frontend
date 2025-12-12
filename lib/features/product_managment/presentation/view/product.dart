@@ -15,16 +15,16 @@ import '../components/image_upload_component.dart';
 import '../components/form_field_component.dart';
 import '../components/category_selection_component.dart';
 import 'mobile_preview_fixed.dart';
+import 'dart:html' as html;
 
-class ProductsPage
-    extends
-        CustomGetView<ProductsControllerInterface, ProductsPresenterInterface> {
+class ProductsPage extends CustomGetView<ProductsControllerInterface,
+    ProductsPresenterInterface> {
   const ProductsPage({super.key});
 
   @override
   Widget buildView(BuildContext context) {
     final hasScaffoldAncestor = Scaffold.maybeOf(context) != null;
-
+    html.document.title = 'Trash4Business - Products Management';
     if (hasScaffoldAncestor) {
       return SafeArea(
         child: LayoutBuilder(
@@ -83,8 +83,8 @@ class ProductsPage
             (category) => ShadOption(value: category, child: Text(category)),
           ),
         ],
-        selectedOptionBuilder:
-            (context, value) => Text(value.isEmpty ? 'All Categories' : value),
+        selectedOptionBuilder: (context, value) =>
+            Text(value.isEmpty ? 'All Categories' : value),
         onChanged: (value) => presenter.filterProducts(value ?? ''),
       ),
     );
@@ -143,34 +143,32 @@ class ProductsPage
   void _showFilterDialog() {
     showShadDialog(
       context: Get.context!,
-      builder:
-          (context) => ShadDialog(
-            title: const Text('Filter Rewards'),
-            description: const Text('Advanced filter options coming soon...'),
-            actions: [
-              ShadButton.outline(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
-              ),
-            ],
+      builder: (context) => ShadDialog(
+        title: const Text('Filter Rewards'),
+        description: const Text('Advanced filter options coming soon...'),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
           ),
+        ],
+      ),
     );
   }
 
   void _showSortDialog() {
     showShadDialog(
       context: Get.context!,
-      builder:
-          (context) => ShadDialog(
-            title: const Text('Sort Rewards'),
-            description: const Text('Sort options coming soon...'),
-            actions: [
-              ShadButton.outline(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Close'),
-              ),
-            ],
+      builder: (context) => ShadDialog(
+        title: const Text('Sort Rewards'),
+        description: const Text('Sort options coming soon...'),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Close'),
           ),
+        ],
+      ),
     );
   }
 
@@ -261,11 +259,10 @@ class ProductsPage
     return Row(
       children: [
         Expanded(
-          flex:
-              presenter.editingProduct.value != null ||
-                      presenter.formTitle.value.isNotEmpty
-                  ? 7
-                  : 12,
+          flex: presenter.editingProduct.value != null ||
+                  presenter.formTitle.value.isNotEmpty
+              ? 7
+              : 12,
           child: _buildMainContent(),
         ),
         Obx(() {
@@ -511,9 +508,9 @@ class ProductsPage
                                           ? AppTextStyles.titleMedium
                                           : AppTextStyles.titleLarge))
                                   .copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.textPrimary,
-                                  ),
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textPrimary,
+                              ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -568,10 +565,9 @@ class ProductsPage
                               style: AppTextStyles.labelMedium.copyWith(
                                 color: AppColors.primary,
                                 fontWeight: FontWeight.w600,
-                                fontSize:
-                                    isVerySmallCard
-                                        ? 10
-                                        : (isSmallCard ? 11 : null),
+                                fontSize: isVerySmallCard
+                                    ? 10
+                                    : (isSmallCard ? 11 : null),
                               ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
@@ -625,22 +621,19 @@ class ProductsPage
     if (imageUrl != null && imageUrl.isNotEmpty) {
       return ClipRRect(
         borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-        child:
-            imageUrl.contains('http')
-                ? Image.network(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) =>
-                          _buildCardImagePlaceholder(),
-                )
-                : Image.asset(
-                  imageUrl,
-                  fit: BoxFit.cover,
-                  errorBuilder:
-                      (context, error, stackTrace) =>
-                          _buildCardImagePlaceholder(),
-                ),
+        child: imageUrl.contains('http')
+            ? Image.network(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildCardImagePlaceholder(),
+              )
+            : Image.asset(
+                imageUrl,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    _buildCardImagePlaceholder(),
+              ),
       );
     } else {
       return _buildCardImagePlaceholder();
@@ -736,12 +729,11 @@ class ProductsPage
                           ? () => presenter.saveProduct()
                           : null,
                   icon: presenter.isLoading.value ? null : Icons.check,
-                  label:
-                      presenter.isLoading.value
-                          ? 'Saving...'
-                          : (presenter.editingProduct.value != null
-                              ? 'Update Product'
-                              : 'Create Product'),
+                  label: presenter.isLoading.value
+                      ? 'Saving...'
+                      : (presenter.editingProduct.value != null
+                          ? 'Update Product'
+                          : 'Create Product'),
                   loading: presenter.isLoading.value,
                 ),
               ),
@@ -772,8 +764,8 @@ class ProductsPage
                 child: Obx(
                   () => _buildTextInput(
                     value: presenter.formTitle.value,
-                    onChanged:
-                        (value) => presenter.updateFormField('title', value),
+                    onChanged: (value) =>
+                        presenter.updateFormField('title', value),
                     hintText: 'Enter your product title',
                   ),
                 ),
@@ -787,8 +779,8 @@ class ProductsPage
                 child: Obx(
                   () => _buildTextInput(
                     value: presenter.formBrand.value,
-                    onChanged:
-                        (value) => presenter.updateFormField('brand', value),
+                    onChanged: (value) =>
+                        presenter.updateFormField('brand', value),
                     hintText: 'Enter product brand',
                   ),
                 ),
@@ -802,9 +794,8 @@ class ProductsPage
                 child: Obx(
                   () => _buildTextInput(
                     value: presenter.formDescription.value,
-                    onChanged:
-                        (value) =>
-                            presenter.updateFormField('description', value),
+                    onChanged: (value) =>
+                        presenter.updateFormField('description', value),
                     hintText: 'Describe your product',
                     maxLines: 3,
                   ),
@@ -1053,8 +1044,8 @@ class ProductsPage
       () => CategorySelectionComponent(
         availableCategories: presenter.categories.toList(),
         selectedCategories: presenter.formCategories.toList(),
-        onSelectionChanged:
-            (categories) => presenter.updateFormField('categories', categories),
+        onSelectionChanged: (categories) =>
+            presenter.updateFormField('categories', categories),
       ),
     );
   }
@@ -1082,10 +1073,9 @@ class ProductsPage
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: AppColors.fieldBorder),
               ),
-              child:
-                  isEditing
-                      ? _buildEditItemInputs(idx, isMobile)
-                      : _buildItemDisplay(idx, item),
+              child: isEditing
+                  ? _buildEditItemInputs(idx, isMobile)
+                  : _buildItemDisplay(idx, item),
             );
           }),
           const SizedBox(height: 8),
@@ -1141,10 +1131,9 @@ class ProductsPage
             const SizedBox(width: 8),
             Obx(
               () => ShadButton(
-                onPressed:
-                    presenter.isNewItemValid()
-                        ? presenter.addItemFromState
-                        : null,
+                onPressed: presenter.isNewItemValid()
+                    ? presenter.addItemFromState
+                    : null,
                 size: ShadButtonSize.sm,
                 child: const Text('Save'),
               ),
@@ -1219,10 +1208,9 @@ class ProductsPage
             const SizedBox(width: 8),
             Obx(
               () => ShadButton(
-                onPressed:
-                    presenter.isEditItemValid()
-                        ? presenter.updateEditItemFromState
-                        : null,
+                onPressed: presenter.isEditItemValid()
+                    ? presenter.updateEditItemFromState
+                    : null,
                 size: ShadButtonSize.sm,
                 child: const Text('Save'),
               ),
@@ -1291,10 +1279,9 @@ class ProductsPage
     Color? color,
   }) {
     final buttonColor = color ?? AppColors.textPrimary;
-    final borderColor =
-        color == AppColors.error
-            ? AppColors.error.withOpacity(0.3)
-            : AppColors.fieldBorder;
+    final borderColor = color == AppColors.error
+        ? AppColors.error.withOpacity(0.3)
+        : AppColors.fieldBorder;
 
     return SizedBox(
       width: fullWidth ? double.infinity : null,
@@ -1543,10 +1530,9 @@ class ProductsPage
       right: 16,
       child: ShadButton(
         onPressed: () => presenter.startCreate(),
-        size:
-            isMobile
-                ? ShadButtonSize.sm
-                : (isTablet ? ShadButtonSize.regular : ShadButtonSize.lg),
+        size: isMobile
+            ? ShadButtonSize.sm
+            : (isTablet ? ShadButtonSize.regular : ShadButtonSize.lg),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -1589,16 +1575,14 @@ class ProductsPage
                       color: Colors.transparent,
                       child: Container(
                         decoration: BoxDecoration(
-                          color:
-                              isSelected
-                                  ? AppColors.primary.withOpacity(0.1)
-                                  : AppColors.surfaceContainer,
+                          color: isSelected
+                              ? AppColors.primary.withOpacity(0.1)
+                              : AppColors.surfaceContainer,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                            color:
-                                isSelected
-                                    ? AppColors.primary
-                                    : AppColors.fieldBorder,
+                            color: isSelected
+                                ? AppColors.primary
+                                : AppColors.fieldBorder,
                             width: isSelected ? 2 : 1,
                           ),
                         ),
@@ -1634,11 +1618,11 @@ class ProductsPage
                                     children: [
                                       Text(
                                         'Reward #$index',
-                                        style: AppTextStyles.bodyMedium
-                                            .copyWith(
-                                              fontWeight: FontWeight.w600,
-                                              color: AppColors.textPrimary,
-                                            ),
+                                        style:
+                                            AppTextStyles.bodyMedium.copyWith(
+                                          fontWeight: FontWeight.w600,
+                                          color: AppColors.textPrimary,
+                                        ),
                                       ),
                                       SizedBox(height: 4),
                                       Text(

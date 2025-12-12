@@ -25,13 +25,10 @@ import '../presentation/presenters/interface/dashboard.dart';
 import '../../../core/widgets/charts/recycling_pie_chart.dart';
 import '../data/models/chart_data.dart';
 import '../data/models/chart_config.dart';
+import 'dart:html' as html;
 
-class DashboardView
-    extends
-        CustomGetView<
-          DashboardControllerInterface,
-          DashboardPresenterInterface
-        > {
+class DashboardView extends CustomGetView<DashboardControllerInterface,
+    DashboardPresenterInterface> {
   const DashboardView({super.key});
 
   // Reactive date range variables
@@ -40,6 +37,7 @@ class DashboardView
 
   @override
   Widget buildView(BuildContext context) {
+    html.document.title = 'Trash4Business - Dashboard';
     return LayoutBuilder(
       builder: (context, constraints) {
         final isDesktop = constraints.maxWidth > AppConstants.tabletBreakpoint;
@@ -65,24 +63,23 @@ class DashboardView
               ),
             ),
           ),
-          drawer:
-              !isDesktop
-                  ? Drawer(
-                    child: Obx(
-                      () => SidebarNavigation(
-                        currentRoute: presenter.currentRoute.value,
-                        isCollapsed: false,
-                        onToggle: () {
-                          // Close drawer when toggle is pressed on mobile/tablet
-                          Scaffold.of(context).closeDrawer();
-                        },
-                        onNavigate:
-                            (route) => _handleMobileNavigation(context, route),
-                        onLogout: businessController.logout,
-                      ),
+          drawer: !isDesktop
+              ? Drawer(
+                  child: Obx(
+                    () => SidebarNavigation(
+                      currentRoute: presenter.currentRoute.value,
+                      isCollapsed: false,
+                      onToggle: () {
+                        // Close drawer when toggle is pressed on mobile/tablet
+                        Scaffold.of(context).closeDrawer();
+                      },
+                      onNavigate: (route) =>
+                          _handleMobileNavigation(context, route),
+                      onLogout: businessController.logout,
                     ),
-                  )
-                  : null,
+                  ),
+                )
+              : null,
         );
       },
     );
@@ -213,18 +210,16 @@ class DashboardView
         children: [
           if (!isDesktop) ...[
             Builder(
-              builder:
-                  (context) => IconButton(
-                    icon: const Icon(Icons.menu, size: 20),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                    style: IconButton.styleFrom(
-                      foregroundColor: AppColors.foreground,
-                    ),
-                  ),
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, size: 20),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                style: IconButton.styleFrom(
+                  foregroundColor: AppColors.foreground,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
           ],
-
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -287,14 +282,13 @@ class DashboardView
         children: [
           if (!isDesktop) ...[
             Builder(
-              builder:
-                  (context) => IconButton(
-                    icon: const Icon(Icons.menu, size: 20),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
-                    style: IconButton.styleFrom(
-                      foregroundColor: AppColors.foreground,
-                    ),
-                  ),
+              builder: (context) => IconButton(
+                icon: const Icon(Icons.menu, size: 20),
+                onPressed: () => Scaffold.of(context).openDrawer(),
+                style: IconButton.styleFrom(
+                  foregroundColor: AppColors.foreground,
+                ),
+              ),
             ),
             const SizedBox(width: 16),
           ],
@@ -377,37 +371,36 @@ class DashboardView
   void _showDateRangePicker(BuildContext context) {
     showShadDialog(
       context: context,
-      builder:
-          (context) => ShadDialog(
-            title: const Text('Select Date Range'),
-            description: const Text(
-              'Choose a custom date range for dashboard data',
-            ),
-            child: Container(
-              width: 400,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const SizedBox(height: 16),
-                  _buildDateRangeSelector(context),
-                  const SizedBox(height: 24),
-                ],
-              ),
-            ),
-            actions: [
-              ShadButton.outline(
-                onPressed: () => Navigator.of(context).pop(),
-                child: const Text('Cancel'),
-              ),
-              ShadButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  _applyDateRange();
-                },
-                child: const Text('Apply'),
-              ),
+      builder: (context) => ShadDialog(
+        title: const Text('Select Date Range'),
+        description: const Text(
+          'Choose a custom date range for dashboard data',
+        ),
+        child: Container(
+          width: 400,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const SizedBox(height: 16),
+              _buildDateRangeSelector(context),
+              const SizedBox(height: 24),
             ],
           ),
+        ),
+        actions: [
+          ShadButton.outline(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          ShadButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _applyDateRange();
+            },
+            child: const Text('Apply'),
+          ),
+        ],
+      ),
     );
   }
 
@@ -706,22 +699,22 @@ class DashboardView
           // Charts and Recent Activity Layout
           isDesktop
               ? Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: _buildChartsSection(context, constraints),
-                  ),
-                  const SizedBox(width: 24),
-                  Expanded(child: _buildRecentActivity(context, constraints)),
-                ],
-              )
+                  children: [
+                    Expanded(
+                      flex: 2,
+                      child: _buildChartsSection(context, constraints),
+                    ),
+                    const SizedBox(width: 24),
+                    Expanded(child: _buildRecentActivity(context, constraints)),
+                  ],
+                )
               : Column(
-                children: [
-                  _buildChartsSection(context, constraints),
-                  const SizedBox(height: 24),
-                  _buildRecentActivity(context, constraints),
-                ],
-              ),
+                  children: [
+                    _buildChartsSection(context, constraints),
+                    const SizedBox(height: 24),
+                    _buildRecentActivity(context, constraints),
+                  ],
+                ),
           const SizedBox(height: 24),
 
           // Recent Activity & Quick Actions
@@ -805,99 +798,99 @@ class DashboardView
             const SizedBox(height: 20),
             isDesktop
                 ? Row(
-                  children: [
-                    Expanded(
-                      child: _buildQuickStatCard(
-                        'Total Revenue',
-                        '\$12,450',
-                        '+15%',
-                        Icons.trending_up,
-                        AppColors.success,
+                    children: [
+                      Expanded(
+                        child: _buildQuickStatCard(
+                          'Total Revenue',
+                          '\$12,450',
+                          '+15%',
+                          Icons.trending_up,
+                          AppColors.success,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildQuickStatCard(
-                        'Items Recycled',
-                        '2,847',
-                        '+8%',
-                        Icons.recycling,
-                        AppColors.primary,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildQuickStatCard(
+                          'Items Recycled',
+                          '2,847',
+                          '+8%',
+                          Icons.recycling,
+                          AppColors.primary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildQuickStatCard(
-                        'Active Customers',
-                        '156',
-                        '+12%',
-                        Icons.people,
-                        AppColors.warning,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildQuickStatCard(
+                          'Active Customers',
+                          '156',
+                          '+12%',
+                          Icons.people,
+                          AppColors.warning,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildQuickStatCard(
-                        'Environmental Impact',
-                        '1.2T CO₂',
-                        '+5%',
-                        Icons.eco,
-                        AppColors.success,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildQuickStatCard(
+                          'Environmental Impact',
+                          '1.2T CO₂',
+                          '+5%',
+                          Icons.eco,
+                          AppColors.success,
+                        ),
                       ),
-                    ),
-                  ],
-                )
+                    ],
+                  )
                 : Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuickStatCard(
-                            'Revenue',
-                            '\$12,450',
-                            '+15%',
-                            Icons.trending_up,
-                            AppColors.success,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickStatCard(
+                              'Revenue',
+                              '\$12,450',
+                              '+15%',
+                              Icons.trending_up,
+                              AppColors.success,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickStatCard(
-                            'Recycled',
-                            '2,847',
-                            '+8%',
-                            Icons.recycling,
-                            AppColors.primary,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickStatCard(
+                              'Recycled',
+                              '2,847',
+                              '+8%',
+                              Icons.recycling,
+                              AppColors.primary,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildQuickStatCard(
-                            'Customers',
-                            '156',
-                            '+12%',
-                            Icons.people,
-                            AppColors.warning,
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildQuickStatCard(
+                              'Customers',
+                              '156',
+                              '+12%',
+                              Icons.people,
+                              AppColors.warning,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildQuickStatCard(
-                            'CO₂ Saved',
-                            '1.2T',
-                            '+5%',
-                            Icons.eco,
-                            AppColors.success,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildQuickStatCard(
+                              'CO₂ Saved',
+                              '1.2T',
+                              '+5%',
+                              Icons.eco,
+                              AppColors.success,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                        ],
+                      ),
+                    ],
+                  ),
           ],
         ),
       ),
@@ -988,107 +981,107 @@ class DashboardView
         const SizedBox(height: 16),
         isDesktop
             ? Row(
-              children: [
-                Expanded(
-                  child: _buildShadMetricCard(
-                    'Products',
-                    presenter.totalProducts.toString(),
-                    '+12%',
-                    Icons.inventory_2_outlined,
-                    AppColors.primary,
-                    'Total products in catalog',
+                children: [
+                  Expanded(
+                    child: _buildShadMetricCard(
+                      'Products',
+                      presenter.totalProducts.toString(),
+                      '+12%',
+                      Icons.inventory_2_outlined,
+                      AppColors.primary,
+                      'Total products in catalog',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildShadMetricCard(
-                    'Recycled',
-                    presenter.totalRecycled.toString(),
-                    '+8%',
-                    Icons.recycling_outlined,
-                    AppColors.success,
-                    'Items successfully recycled',
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildShadMetricCard(
+                      'Recycled',
+                      presenter.totalRecycled.toString(),
+                      '+8%',
+                      Icons.recycling_outlined,
+                      AppColors.success,
+                      'Items successfully recycled',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildShadMetricCard(
-                    'Rate',
-                    '${presenter.totalProducts > 0 ? ((presenter.totalRecycled / presenter.totalProducts) * 100).toStringAsFixed(1) : '0'}%',
-                    '+2.5%',
-                    Icons.trending_up_outlined,
-                    AppColors.warning,
-                    'Recycling efficiency rate',
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildShadMetricCard(
+                      'Rate',
+                      '${presenter.totalProducts > 0 ? ((presenter.totalRecycled / presenter.totalProducts) * 100).toStringAsFixed(1) : '0'}%',
+                      '+2.5%',
+                      Icons.trending_up_outlined,
+                      AppColors.warning,
+                      'Recycling efficiency rate',
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: _buildShadMetricCard(
-                    'Rewards',
-                    '43',
-                    '+18%',
-                    Icons.card_giftcard_outlined,
-                    AppColors.secondary,
-                    'Active reward programs',
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: _buildShadMetricCard(
+                      'Rewards',
+                      '43',
+                      '+18%',
+                      Icons.card_giftcard_outlined,
+                      AppColors.secondary,
+                      'Active reward programs',
+                    ),
                   ),
-                ),
-              ],
-            )
+                ],
+              )
             : Column(
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildShadMetricCard(
-                        'Products',
-                        presenter.totalProducts.toString(),
-                        '+12%',
-                        Icons.inventory_2_outlined,
-                        AppColors.primary,
-                        'Total products',
+                children: [
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildShadMetricCard(
+                          'Products',
+                          presenter.totalProducts.toString(),
+                          '+12%',
+                          Icons.inventory_2_outlined,
+                          AppColors.primary,
+                          'Total products',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildShadMetricCard(
-                        'Recycled',
-                        presenter.totalRecycled.toString(),
-                        '+8%',
-                        Icons.recycling_outlined,
-                        AppColors.success,
-                        'Items recycled',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildShadMetricCard(
+                          'Recycled',
+                          presenter.totalRecycled.toString(),
+                          '+8%',
+                          Icons.recycling_outlined,
+                          AppColors.success,
+                          'Items recycled',
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildShadMetricCard(
-                        'Rate',
-                        '${presenter.totalProducts > 0 ? ((presenter.totalRecycled / presenter.totalProducts) * 100).toStringAsFixed(1) : '0'}%',
-                        '+2.5%',
-                        Icons.trending_up_outlined,
-                        AppColors.warning,
-                        'Success rate',
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: _buildShadMetricCard(
+                          'Rate',
+                          '${presenter.totalProducts > 0 ? ((presenter.totalRecycled / presenter.totalProducts) * 100).toStringAsFixed(1) : '0'}%',
+                          '+2.5%',
+                          Icons.trending_up_outlined,
+                          AppColors.warning,
+                          'Success rate',
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildShadMetricCard(
-                        'Rewards',
-                        '43',
-                        '+18%',
-                        Icons.card_giftcard_outlined,
-                        AppColors.secondary,
-                        'Active rewards',
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildShadMetricCard(
+                          'Rewards',
+                          '43',
+                          '+18%',
+                          Icons.card_giftcard_outlined,
+                          AppColors.secondary,
+                          'Active rewards',
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
+                    ],
+                  ),
+                ],
+              ),
       ],
     );
   }
@@ -1173,19 +1166,19 @@ class DashboardView
 
     return isDesktop
         ? Row(
-          children: [
-            Expanded(flex: 2, child: _buildTrendChart()),
-            const SizedBox(width: 24),
-            Expanded(child: _buildTopPerformers()),
-          ],
-        )
+            children: [
+              Expanded(flex: 2, child: _buildTrendChart()),
+              const SizedBox(width: 24),
+              Expanded(child: _buildTopPerformers()),
+            ],
+          )
         : Column(
-          children: [
-            _buildTrendChart(),
-            const SizedBox(height: 24),
-            _buildTopPerformers(),
-          ],
-        );
+            children: [
+              _buildTrendChart(),
+              const SizedBox(height: 24),
+              _buildTopPerformers(),
+            ],
+          );
   }
 
   Widget _buildTrendChart() {
@@ -1481,99 +1474,99 @@ class DashboardView
             const SizedBox(height: 24),
             constraints.maxWidth > AppConstants.tabletBreakpoint
                 ? Row(
-                  children: [
-                    Expanded(
-                      child: _buildImpactCard(
-                        'CO₂ Reduced',
-                        '1,247 kg',
-                        'Equivalent to 15 trees planted',
-                        Icons.park,
-                        AppColors.success,
+                    children: [
+                      Expanded(
+                        child: _buildImpactCard(
+                          'CO₂ Reduced',
+                          '1,247 kg',
+                          'Equivalent to 15 trees planted',
+                          Icons.park,
+                          AppColors.success,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildImpactCard(
-                        'Water Saved',
-                        '3,420 L',
-                        'Equivalent to 68 showers',
-                        Icons.water_drop,
-                        AppColors.primary,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildImpactCard(
+                          'Water Saved',
+                          '3,420 L',
+                          'Equivalent to 68 showers',
+                          Icons.water_drop,
+                          AppColors.primary,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildImpactCard(
-                        'Energy Saved',
-                        '847 kWh',
-                        'Powers 12 homes for 1 day',
-                        Icons.bolt,
-                        AppColors.warning,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildImpactCard(
+                          'Energy Saved',
+                          '847 kWh',
+                          'Powers 12 homes for 1 day',
+                          Icons.bolt,
+                          AppColors.warning,
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildImpactCard(
-                        'Waste Diverted',
-                        '2.3 tons',
-                        'From landfills this month',
-                        Icons.delete_sweep,
-                        AppColors.secondary,
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildImpactCard(
+                          'Waste Diverted',
+                          '2.3 tons',
+                          'From landfills this month',
+                          Icons.delete_sweep,
+                          AppColors.secondary,
+                        ),
                       ),
-                    ),
-                  ],
-                )
+                    ],
+                  )
                 : Column(
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildImpactCard(
-                            'CO₂ Reduced',
-                            '1,247 kg',
-                            'Equiv. to 15 trees',
-                            Icons.park,
-                            AppColors.success,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildImpactCard(
+                              'CO₂ Reduced',
+                              '1,247 kg',
+                              'Equiv. to 15 trees',
+                              Icons.park,
+                              AppColors.success,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildImpactCard(
-                            'Water Saved',
-                            '3,420 L',
-                            'Equiv. to 68 showers',
-                            Icons.water_drop,
-                            AppColors.primary,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildImpactCard(
+                              'Water Saved',
+                              '3,420 L',
+                              'Equiv. to 68 showers',
+                              Icons.water_drop,
+                              AppColors.primary,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildImpactCard(
-                            'Energy Saved',
-                            '847 kWh',
-                            '12 homes for 1 day',
-                            Icons.bolt,
-                            AppColors.warning,
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildImpactCard(
+                              'Energy Saved',
+                              '847 kWh',
+                              '12 homes for 1 day',
+                              Icons.bolt,
+                              AppColors.warning,
+                            ),
                           ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildImpactCard(
-                            'Waste Diverted',
-                            '2.3 tons',
-                            'From landfills',
-                            Icons.delete_sweep,
-                            AppColors.secondary,
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildImpactCard(
+                              'Waste Diverted',
+                              '2.3 tons',
+                              'From landfills',
+                              Icons.delete_sweep,
+                              AppColors.secondary,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+                        ],
+                      ),
+                    ],
+                  ),
           ],
         ),
       ),
@@ -1645,8 +1638,7 @@ class DashboardView
   Widget _buildMetricsGrid(BuildContext context, BoxConstraints constraints) {
     final screenWidth = constraints.maxWidth;
     final isDesktop = screenWidth > AppConstants.tabletBreakpoint;
-    final isTablet =
-        screenWidth > AppConstants.mobileBreakpoint &&
+    final isTablet = screenWidth > AppConstants.mobileBreakpoint &&
         screenWidth <= AppConstants.tabletBreakpoint;
 
     // Calculate optimal card width and count based on screen size
@@ -1658,17 +1650,17 @@ class DashboardView
       // Desktop: Aim for 280-320px card width
       optimalCardWidth = 300;
       crossAxisCount = (screenWidth / (optimalCardWidth + 24)).floor().clamp(
-        2,
-        4,
-      );
+            2,
+            4,
+          );
       spacing = 24;
     } else if (isTablet) {
       // Tablet: Aim for 250-280px card width
       optimalCardWidth = 265;
       crossAxisCount = (screenWidth / (optimalCardWidth + 16)).floor().clamp(
-        2,
-        3,
-      );
+            2,
+            3,
+          );
       spacing = 16;
     } else {
       // Mobile: Single column with full width
@@ -1727,10 +1719,9 @@ class DashboardView
         ),
         _buildMetricCard(
           title: 'Recycling Rate',
-          value:
-              presenter.totalProducts > 0
-                  ? '${((presenter.totalRecycled / presenter.totalProducts) * 100).toStringAsFixed(1)}%'
-                  : '0%',
+          value: presenter.totalProducts > 0
+              ? '${((presenter.totalRecycled / presenter.totalProducts) * 100).toStringAsFixed(1)}%'
+              : '0%',
           change: '+2.5%',
           isPositive: true,
           icon: Icons.trending_up_outlined,
@@ -1854,10 +1845,9 @@ class DashboardView
                   Text(
                     change,
                     style: AppTextStyles.small.copyWith(
-                      color:
-                          isPositive
-                              ? AppColors.success
-                              : AppColors.destructive,
+                      color: isPositive
+                          ? AppColors.success
+                          : AppColors.destructive,
                       fontWeight: FontWeight.w500,
                       fontSize: changeFontSize,
                       height: 1.0,
@@ -2046,9 +2036,8 @@ class DashboardView
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               itemCount: presenter.mostRecycledProducts.length,
-              separatorBuilder:
-                  (context, index) =>
-                      const Divider(color: AppColors.border, height: 1),
+              separatorBuilder: (context, index) =>
+                  const Divider(color: AppColors.border, height: 1),
               itemBuilder: (context, index) {
                 final product = presenter.mostRecycledProducts[index];
                 return Padding(
@@ -2069,9 +2058,8 @@ class DashboardView
                             '${index + 1}',
                             style: AppTextStyles.small.copyWith(
                               fontWeight: FontWeight.w600,
-                              color:
-                                  AppColors.chartColors[index %
-                                      AppColors.chartColors.length],
+                              color: AppColors.chartColors[
+                                  index % AppColors.chartColors.length],
                             ),
                           ),
                         ),
@@ -2132,19 +2120,19 @@ class DashboardView
 
     return isDesktop
         ? Row(
-          children: [
-            Expanded(flex: 2, child: _buildRecentActivityFeed()),
-            const SizedBox(width: 24),
-            Expanded(child: _buildQuickActions()),
-          ],
-        )
+            children: [
+              Expanded(flex: 2, child: _buildRecentActivityFeed()),
+              const SizedBox(width: 24),
+              Expanded(child: _buildQuickActions()),
+            ],
+          )
         : Column(
-          children: [
-            _buildRecentActivityFeed(),
-            const SizedBox(height: 24),
-            _buildQuickActions(),
-          ],
-        );
+            children: [
+              _buildRecentActivityFeed(),
+              const SizedBox(height: 24),
+              _buildQuickActions(),
+            ],
+          );
   }
 
   Widget _buildRecentActivityFeed() {
