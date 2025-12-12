@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "server.js",
   "description": "T4G for Business - Flutter Web Application",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "start": "node server.js",
-    "build": "flutter build web --no-tree-shake-icons",
+    "build:web": "flutter build web --no-tree-shake-icons",
+    "heroku-postbuild": "echo 'Skipping Flutter build on Heroku. Ensure build/web is committed.'",
     "deploy": "npm run build && firebase deploy --only hosting",
     "deploy:message": "npm run build && firebase deploy --only hosting -m",
     "quick-deploy": "./quick-deploy.sh",
