@@ -1,21 +1,11 @@
-import 'dart:js' as js; // Use dart:js for better compatibility than dart:html
+import 'dart:js' as js;
 
 class WebEnv {
   static String getEnv(String key) {
-    // 1. Try to get it from compile-time (useful for local development)
-    const compileTimeValue = String.fromEnvironment('MY_KEY');
-    if (compileTimeValue.isNotEmpty) return compileTimeValue;
+    // Access the window.__ENV__ object we injected in server.js
+    final env = js.context['__ENV__'];
+    if (env == null) return '';
 
-    // 2. Fallback: Try to get it from the injected window.__ENV__ (for Heroku)
-    try {
-      if (js.context.hasProperty('__ENV__')) {
-        final env = js.context['__ENV__'];
-        return env[key]?.toString() ?? '';
-      }
-    } catch (e) {
-      print('Error accessing runtime env: $e');
-    }
-
-    return '';
+    return env[key]?.toString() ?? '';
   }
 }

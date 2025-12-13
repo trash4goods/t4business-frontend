@@ -96,7 +96,7 @@ void debugEnv() {
     'API_BASE_DEV_URL',
   ]) {
     print("Checking $k...");
-    final v = String.fromEnvironment(k);
+    final v = WebEnv.getEnv(k);
     print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
   }
 }

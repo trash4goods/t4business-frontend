@@ -1,7 +1,7 @@
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:t4g_for_business/utils/helpers/web_env.dart';
 
 class ApiEndpoints {
-  static String get devUrl => dotenv.env['API_BASE_DEV_URL'] ?? '';
+  static String get devUrl => WebEnv.getEnv('API_BASE_DEV_URL');
   static const String base = '/api';
   static const String login = '/tokens';
   static const String verifyEmail = '/users/verify_email';
