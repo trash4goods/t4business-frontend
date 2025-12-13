@@ -1,4 +1,5 @@
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:get/get.dart';
@@ -8,6 +9,7 @@ import 'package:t4g_for_business/features/auth/data/models/user_auth/department_
 import 'package:t4g_for_business/features/auth/data/models/user_auth/user_profile_full_roles.dart';
 import 'package:t4g_for_business/features/auth/data/models/user_auth/user_profile_partners_departments.dart';
 import 'package:t4g_for_business/features/auth/data/models/user_auth/user_statistics_model.dart';
+import 'package:t4g_for_business/utils/helpers/web_env.dart';
 
 import 'app.dart';
 import 'core/services/auth_service.dart';
@@ -28,10 +30,14 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables
-  await dotenv.load(fileName: ".env");
+  if (kDebugMode) {
+    await dotenv.load(fileName: ".env");
+  }
 
+  debugEnv();
   // Initialize Firebase
-  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+  FirebaseOptions options = DefaultFirebaseOptions.currentPlatform;
+  await Firebase.initializeApp(options: options);
 
   // Configure URL strategy to remove "#" from URLs (path-based routing)
   configureUrlStrategy();
@@ -66,4 +72,16 @@ void main() async {
   Get.put(PendingTaskService());
 
   runApp(const App());
+}
+
+void debugEnv() {
+  for (final k in [
+    'FIREBASE_API_KEY',
+    'FIREBASE_AUTH_DOMAIN',
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_APP_ID',
+  ]) {
+    final v = WebEnv.getEnv(k);
+    print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
+  }
 }
