@@ -30,13 +30,8 @@ void main() async {
   print("Initializing main()...");
   WidgetsFlutterBinding.ensureInitialized();
   // Load environment variables
-  if (kDebugMode) {
-    print("Loading .env file for debug mode...");
-    await dotenv.load(fileName: ".env");
-  } else {
-    print("Skipping local .env variables for release mode...");
-    debugEnv();
-  }
+
+  await dotenv.load(fileName: ".env");
 
   // debugEnv();
   // Initialize Firebase
