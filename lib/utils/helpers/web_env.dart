@@ -1,25 +1,21 @@
-// ignore: avoid_web_libraries_in_flutter, deprecated_member_use
-import 'dart:html' as html;
+import 'dart:js' as js; // Use dart:js for better compatibility than dart:html
 
 class WebEnv {
-  /// Retrieves the value of an environment variable defined in the web environment.
-  ///
-  /// This function accesses the global `__ENV__` object injected into the web
-  /// page to fetch environment-specific configuration values.
-  ///
-  /// [key]: The name of the environment variable to retrieve.
-  ///
-  /// Returns the value of the environment variable as a [String]. If the variable
-  /// is not found, it returns an empty string.
   static String getEnv(String key) {
-    final win = html.window as dynamic;
-    if (win.__ENV__ == null) {
-      print('__ENV__ is null');
-      return '';
+    // 1. Try to get it from compile-time (useful for local development)
+    const compileTimeValue = String.fromEnvironment('MY_KEY');
+    if (compileTimeValue.isNotEmpty) return compileTimeValue;
+
+    // 2. Fallback: Try to get it from the injected window.__ENV__ (for Heroku)
+    try {
+      if (js.context.hasProperty('__ENV__')) {
+        final env = js.context['__ENV__'];
+        return env[key]?.toString() ?? '';
+      }
+    } catch (e) {
+      print('Error accessing runtime env: $e');
     }
 
-    final value = win.__ENV__[key];
-    print('ENV $key = $value');
-    return value?.toString() ?? '';
+    return '';
   }
 }
