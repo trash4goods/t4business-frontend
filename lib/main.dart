@@ -36,7 +36,7 @@ void main() async {
   // debugEnv();
   // Initialize Firebase
   // TEMPORARY: Debugging initialization issues
-  print("Skipping Firebase initialization...");
+  print("Initializing firebase...");
   // FirebaseOptions options = DefaultFirebaseOptions.currentPlatform;
   // await Firebase.initializeApp(options: options);
 
