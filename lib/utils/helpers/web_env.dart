@@ -12,7 +12,14 @@ class WebEnv {
   /// Returns the value of the environment variable as a [String]. If the variable
   /// is not found, it returns an empty string.
   static String getEnv(String key) {
-    final env = (html.window as dynamic).__ENV__;
-    return env != null ? env[key]?.toString() ?? '' : '';
+    final win = html.window as dynamic;
+    if (win.__ENV__ == null) {
+      print('❌ __ENV__ is null');
+      return '';
+    }
+
+    final value = win.__ENV__[key];
+    print('ENV $key = $value');
+    return value?.toString() ?? '';
   }
 }

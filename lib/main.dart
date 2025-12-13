@@ -37,8 +37,10 @@ void main() async {
 
   debugEnv();
   // Initialize Firebase
-  FirebaseOptions options = DefaultFirebaseOptions.currentPlatform;
-  await Firebase.initializeApp(options: options);
+  // TEMPORARY: Debugging initialization issues
+  print("Initializing Firebase...");
+  // FirebaseOptions options = DefaultFirebaseOptions.currentPlatform;
+  // await Firebase.initializeApp(options: options);
 
   // Configure URL strategy to remove "#" from URLs (path-based routing)
   configureUrlStrategy();
@@ -78,9 +80,13 @@ void main() async {
 void debugEnv() {
   for (final k in [
     'FIREBASE_API_KEY',
-    'FIREBASE_AUTH_DOMAIN',
-    'FIREBASE_PROJECT_ID',
     'FIREBASE_APP_ID',
+    'FIREBASE_MESSAGING_SENDER_ID',
+    'FIREBASE_PROJECT_ID',
+    'FIREBASE_AUTH_DOMAIN',
+    'FIREBASE_STORAGE_BUCKET',
+    'FIREBASE_MEASUREMENT_ID',
+    'API_BASE_DEV_URL',
   ]) {
     final v = WebEnv.getEnv(k);
     print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
