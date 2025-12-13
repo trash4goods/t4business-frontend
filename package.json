@@ -1,6 +1,6 @@
 {
   "name": "t4business",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "server.js",
   "description": "T4G for Business - Flutter Web Application",
   "engines": {
