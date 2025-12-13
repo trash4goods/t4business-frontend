@@ -37,8 +37,7 @@ void main() async {
   // Initialize Firebase
   // TEMPORARY: Debugging initialization issues
   print("Initializing firebase...");
-  // FirebaseOptions options = DefaultFirebaseOptions.currentPlatform;
-  // await Firebase.initializeApp(options: options);
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Configure URL strategy to remove "#" from URLs (path-based routing)
   configureUrlStrategy();
