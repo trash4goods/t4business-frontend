@@ -33,7 +33,7 @@ void main() async {
 
   await dotenv.load(fileName: ".env");
 
-  // debugEnv();
+  debugEnv();
   // Initialize Firebase
   // TEMPORARY: Debugging initialization issues
   print("Initializing firebase...");
@@ -97,7 +97,7 @@ void debugEnv() {
     'API_BASE_DEV_URL',
   ]) {
     print("Checking $k...");
-    final v = String.fromEnvironment(k);
+    final v = dotenv.env[k] ?? '';
     print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
   }
 }
