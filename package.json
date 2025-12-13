@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node server.js",
-    "build:web": "flutter build web --no-tree-shake-icons",
+    "build:web": "./heroku_build.sh",
+    "build": "./heroku_build.sh",
     "heroku-postbuild": "echo 'Skipping Flutter build on Heroku. Ensure build/web is committed.'",
     "deploy": "npm run build && firebase deploy --only hosting",
     "deploy:message": "npm run build && firebase deploy --only hosting -m",
