@@ -96,7 +96,7 @@ void debugEnv() {
     'API_BASE_DEV_URL',
   ]) {
     print("Checking $k...");
-    final v = dotenv.env[k] ?? '';
+    final v = String.fromEnvironment(k);
     print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
   }
 }
