@@ -1,5 +1,7 @@
 #!/bin/bash
+set -e
 
+echo "Building Flutter web app with environment variables..."
 flutter build web \
   --dart-define=FIREBASE_API_KEY=$FIREBASE_API_KEY \
   --dart-define=FIREBASE_APP_ID=$FIREBASE_APP_ID \

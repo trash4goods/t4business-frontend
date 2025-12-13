@@ -10,7 +10,6 @@
     "start": "node server.js",
     "build:web": "./heroku_build.sh",
     "build": "./heroku_build.sh",
-    "heroku-postbuild": "echo 'Skipping Flutter build on Heroku. Ensure build/web is committed.'",
     "deploy": "npm run build && firebase deploy --only hosting",
     "deploy:message": "npm run build && firebase deploy --only hosting -m",
     "quick-deploy": "./quick-deploy.sh",
