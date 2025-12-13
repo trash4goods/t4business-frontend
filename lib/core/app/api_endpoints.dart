@@ -1,7 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 class ApiEndpoints {
-  static String get devUrl => dotenv.env['API_BASE_DEV_URL'] ?? '';
+  static String get devUrl =>
+      kDebugMode
+          ? dotenv.env['API_BASE_DEV_URL'] ?? ''
+          : const String.fromEnvironment('API_BASE_DEV_URL');
   static const String base = '/api';
   static const String login = '/tokens';
   static const String verifyEmail = '/users/verify_email';
