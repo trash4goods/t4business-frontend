@@ -27,6 +27,7 @@ import 'utils/helpers/local_storage.dart';
 import 'utils/url_strategy.dart';
 
 void main() async {
+  print("Main started");
   WidgetsFlutterBinding.ensureInitialized();
 
   // Load environment variables
