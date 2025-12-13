@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
+// ignore: deprecated_member_use, avoid_web_libraries_in_flutter
 import 'dart:html' as html;
 import 'package:firebase_auth/firebase_auth.dart';
 
@@ -125,15 +126,11 @@ class BrowserHistoryService extends GetxService {
       final authService = Get.find<AuthService>();
 
       log('BrowserHistory: Back button pressed on route $currentRoute');
-      log(
-        'BrowserHistory: User authenticated: ${authService.isAuthenticated}',
-      );
+      log('BrowserHistory: User authenticated: ${authService.isAuthenticated}');
 
       // If user is authenticated and on a protected route
       if (authService.isAuthenticated && _isProtectedRoute(currentRoute)) {
-        log(
-          'BrowserHistory: Preventing back navigation from protected route',
-        );
+        log('BrowserHistory: Preventing back navigation from protected route');
 
         // Prevent the back navigation by pushing the current route forward
         html.window.history.pushState(null, '', currentRoute);

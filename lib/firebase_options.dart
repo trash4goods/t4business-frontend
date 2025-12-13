@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
     show defaultTargetPlatform, kIsWeb, TargetPlatform, kDebugMode;
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:t4g_for_business/utils/helpers/web_env.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
 ///
@@ -57,30 +58,30 @@ class DefaultFirebaseOptions {
     apiKey:
         kDebugMode
             ? dotenv.env['FIREBASE_API_KEY'] ?? ''
-            : const String.fromEnvironment('FIREBASE_API_KEY'),
+            : WebEnv.getEnv('FIREBASE_API_KEY'),
     appId:
         kDebugMode
             ? dotenv.env['FIREBASE_APP_ID'] ?? ''
-            : const String.fromEnvironment('FIREBASE_APP_ID'),
+            : WebEnv.getEnv('FIREBASE_APP_ID'),
     messagingSenderId:
         kDebugMode
             ? dotenv.env['FIREBASE_MESSAGING_SENDER_ID'] ?? ''
-            : const String.fromEnvironment('FIREBASE_MESSAGING_SENDER_ID'),
+            : WebEnv.getEnv('FIREBASE_MESSAGING_SENDER_ID'),
     projectId:
         kDebugMode
             ? dotenv.env['FIREBASE_PROJECT_ID'] ?? ''
-            : const String.fromEnvironment('FIREBASE_PROJECT_ID'),
+            : WebEnv.getEnv('FIREBASE_PROJECT_ID'),
     authDomain:
         kDebugMode
             ? dotenv.env['FIREBASE_AUTH_DOMAIN'] ?? ''
-            : const String.fromEnvironment('FIREBASE_AUTH_DOMAIN'),
+            : WebEnv.getEnv('FIREBASE_AUTH_DOMAIN'),
     storageBucket:
         kDebugMode
             ? dotenv.env['FIREBASE_STORAGE_BUCKET'] ?? ''
-            : const String.fromEnvironment('FIREBASE_STORAGE_BUCKET'),
+            : WebEnv.getEnv('FIREBASE_STORAGE_BUCKET'),
     measurementId:
         kDebugMode
             ? dotenv.env['FIREBASE_MEASUREMENT_ID'] ?? ''
-            : const String.fromEnvironment('FIREBASE_MEASUREMENT_ID'),
+            : WebEnv.getEnv('FIREBASE_MEASUREMENT_ID'),
   );
 }
