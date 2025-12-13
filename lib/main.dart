@@ -27,24 +27,27 @@ import 'utils/helpers/local_storage.dart';
 import 'utils/url_strategy.dart';
 
 void main() async {
-  print("Main started");
+  print("Initializing main()...");
   WidgetsFlutterBinding.ensureInitialized();
-
   // Load environment variables
   if (kDebugMode) {
+    print("Loading .env file for debug mode...");
     await dotenv.load(fileName: ".env");
+  } else {
+    print("Skipping local .env variables for release mode...");
   }
 
-  debugEnv();
+  // debugEnv();
   // Initialize Firebase
   // TEMPORARY: Debugging initialization issues
-  print("Initializing Firebase...");
+  print("Skipping Firebase initialization...");
   // FirebaseOptions options = DefaultFirebaseOptions.currentPlatform;
   // await Firebase.initializeApp(options: options);
 
   // Configure URL strategy to remove "#" from URLs (path-based routing)
   configureUrlStrategy();
 
+  print("Initializing Hive and local storage...");
   // Initialize Hive
   await Hive.initFlutter();
 
