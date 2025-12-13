@@ -31,9 +31,7 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Load environment variables
 
-  await dotenv.load(
-    fileName: ".env?v=${DateTime.now().millisecondsSinceEpoch}",
-  );
+  await dotenv.load(fileName: ".env_config");
 
   debugEnv();
   // Initialize Firebase

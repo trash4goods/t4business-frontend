@@ -93,7 +93,7 @@ flutter:
   assets:
     - assets/logo/
     - assets/images/
-    - .env
+    - .env_config
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg
 

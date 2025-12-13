@@ -38831,7 +38831,7 @@ for(;;)switch(s){case 0:A.d_("Initializing main()...")
 if($.a_==null)A.Gp()
 $.a_.toString
 s=2
-return A.j($.rK().Hz(0,".env?v="+Date.now()),$async$vt)
+return A.j($.rK().Hz(0,".env_config"),$async$vt)
 case 2:A.bL8()
 A.d_("Initializing firebase...")
 s=3
