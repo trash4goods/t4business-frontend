@@ -2,7 +2,7 @@
 
 # Navigate to the compiled assets directory
 # Pre-compiled assets are usually in build/web/assets/assets/
-TARGET_DIR="build/web/assets/assets"
+TARGET_DIR="/assets"
 mkdir -p $TARGET_DIR
 
 echo "Generating .env file in $TARGET_DIR from Heroku Config Vars..."
