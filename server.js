@@ -1,17 +1,21 @@
 const fs = require('fs');
 const path = require('path');
+const express = require('express');
+const app = express();
 
-// 1. Path to where Flutter looks for assets at runtime
-// For Flutter Web, assets are usually in build/web/assets/assets/
-const assetPath = path.join(__dirname, 'build', 'web', 'assets', 'assets');
-const envFilePath = path.join(assetPath, '.env');
+// 1. Define the path where Flutter expects the .env asset
+// Note: Depending on your pubspec, it might be 'build/web/assets/.env' 
+// or 'build/web/assets/assets/.env'
+const envDir = path.join(__dirname, 'build', 'web', 'assets');
+const envPath = path.join(envDir, '.env');
 
-// 2. Ensure the directory exists
-if (!fs.existsSync(assetPath)) {
-    fs.mkdirSync(assetPath, { recursive: true });
+// 2. Create the directory if it doesn't exist
+if (!fs.existsSync(envDir)) {
+    fs.mkdirSync(envDir, { recursive: true });
 }
 
-// 3. Create the .env content using Heroku's process.env
+// 3. Write Heroku Config Vars into the .env file
+// Use process.env to grab values you set in the Heroku Dashboard
 const envContent = `
 FIREBASE_API_KEY=${process.env.FIREBASE_API_KEY || ''}
 FIREBASE_APP_ID=${process.env.FIREBASE_APP_ID || ''}
@@ -23,24 +27,11 @@ FIREBASE_MEASUREMENT_ID=${process.env.FIREBASE_MEASUREMENT_ID || ''}
 API_BASE_DEV_URL=${process.env.API_BASE_DEV_URL || ''}
 `.trim();
 
-// 4. Write the file synchronously before the server starts
-try {
-    fs.writeFileSync(envFilePath, envContent);
-    console.log('Successfully generated .env for Flutter Web at:', envFilePath);
-} catch (err) {
-    console.error('Failed to generate .env file:', err);
-}
+fs.writeFileSync(envPath, envContent);
+console.log(`Generated .env at ${envPath}`);
 
+// 4. Serve your Flutter files
+app.use(express.static(path.join(__dirname, 'build', 'web')));
 
-
-const express = require("express");
-const app = express();
-const port = process.env.PORT || 8080;
-
-app.use(express.static(path.join(__dirname, "build/web")));
-
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "build/web/index.html"));
-});
-
-app.listen(port);
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
