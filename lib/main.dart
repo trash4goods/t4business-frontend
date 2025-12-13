@@ -50,6 +50,7 @@ void main() async {
   print("Initializing Hive and local storage...");
   // Initialize Hive
   await Hive.initFlutter();
+  print("Hive initialized! Registering adapters...");
 
   // Register Hive adapters
   Hive.registerAdapter(UserAuthModelAdapter());
@@ -63,20 +64,27 @@ void main() async {
   Hive.registerAdapter(DepartmentModelAdapter());
   Hive.registerAdapter(DepartmentFileModelAdapter());
   Hive.registerAdapter(CreatedByModelAdapter());
-
+  print("Adapters registered for Hive and local storage...");
+  print("Initializing AuthCacheDataSource...");
   // init auth cache
   await AuthCacheDataSource.instance.init();
+  print("AuthCacheDataSource initialized! Initializing LocalStorageHelper...");
 
   await LocalStorageHelper.init();
+  print("LocalStorageHelper initialized! Initializing AuthService...");
 
   await Get.putAsync(() => AuthService().init());
-
+  print("AuthService initialized!");
   // Initialize browser history service for back button control
+  print("Initializing BrowserHistoryService...");
   Get.put(BrowserHistoryService());
+  print("BrowserHistoryService initialized!");
 
   // Initialize pending task service for route management
+  print("Initializing PendingTaskService...");
   Get.put(PendingTaskService());
-
+  print("PendingTaskService initialized!");
+  print("Starting the app...");
   runApp(const App());
 }
 

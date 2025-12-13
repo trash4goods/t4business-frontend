@@ -14,7 +14,7 @@ class WebEnv {
   static String getEnv(String key) {
     final win = html.window as dynamic;
     if (win.__ENV__ == null) {
-      print('❌ __ENV__ is null');
+      print('__ENV__ is null');
       return '';
     }
 
