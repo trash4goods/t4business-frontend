@@ -35,6 +35,7 @@ void main() async {
     await dotenv.load(fileName: ".env");
   } else {
     print("Skipping local .env variables for release mode...");
+    debugEnv();
   }
 
   // debugEnv();
@@ -89,6 +90,7 @@ void main() async {
 }
 
 void debugEnv() {
+  print("Debugging environment variables...");
   for (final k in [
     'FIREBASE_API_KEY',
     'FIREBASE_APP_ID',
@@ -99,6 +101,7 @@ void debugEnv() {
     'FIREBASE_MEASUREMENT_ID',
     'API_BASE_DEV_URL',
   ]) {
+    print("Checking $k...");
     final v = WebEnv.getEnv(k);
     print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
   }
