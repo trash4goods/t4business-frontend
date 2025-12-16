@@ -2,8 +2,7 @@
 // ignore_for_file: type=lint
 import 'package:firebase_core/firebase_core.dart' show FirebaseOptions;
 import 'package:flutter/foundation.dart'
-    show defaultTargetPlatform, kIsWeb, TargetPlatform, kDebugMode;
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+    show defaultTargetPlatform, kIsWeb, TargetPlatform;
 import 'package:t4g_for_business/utils/helpers/web_env.dart';
 
 /// Default [FirebaseOptions] for use with your Firebase apps.
