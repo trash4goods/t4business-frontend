@@ -1,6 +1,0 @@
-TODO:
- - Add logout feature in the menu sidebar [DONE] 
- - Create notfoundpage and button to navigate back to login.
- - Implement navigation middleware to protect routes (cannot navigate from login to dashboard or vice-versa through URL or browser back button) [DONE]
- - Create Products page (create new product(live app rending as the user fills the fields/add image ...), edit, view and delete products) [DONE]
- - Create Profile page (view and edit user profile - user may edit only name) [DONE]
