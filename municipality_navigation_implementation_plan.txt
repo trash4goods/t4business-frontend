@@ -1,0 +1,104 @@
+MUNICIPALITY NAVIGATION IMPLEMENTATION PLAN
+===========================================
+
+OBJECTIVE:
+Hide dashboard, recycling products, and rules sections for users with department_type "municipality", 
+showing only rewards and profile sections, while ensuring hidden resources don't consume unnecessary resources.
+
+CURRENT ARCHITECTURE ANALYSIS:
+------------------------------
+1. UserProfileModel contains userPartnersDepartments (List<UserPartnersDepartmentModel>)
+2. UserPartnersDepartmentModel contains department (DepartmentModel)
+3. DepartmentModel contains departmentType (String) - this is our key field
+4. Navigation is implemented through:
+   - SidebarNavigation widget (/core/widgets/sidebar_navigation.dart)
+   - DashboardShell view (/features/dashboard_shell/presentation/view/dashboard_shell_view.dart)
+   - Routes defined in AppRoutes and AppPages
+
+IMPLEMENTATION STRATEGY:
+-----------------------
+
+STEP 1: Create Municipality Detection Service
+- File: /lib/core/services/municipality_service.dart
+- Purpose: Check if current user has department_type "municipality"
+- Method: getMunicipalityStatus() -> bool
+- Dependencies: AuthController to access UserProfileModel
+
+STEP 2: Update Sidebar Navigation Logic
+- File: /lib/core/widgets/sidebar_navigation.dart
+- Modify _buildNavigationItems() method
+- Add municipality check before adding dashboard, products, rules items
+- Keep only rewards and profile for municipality users
+- Ensure clean separation of navigation logic
+
+STEP 3: Update Route Access Control
+- File: /lib/core/app/app_pages.dart
+- Add middleware/guard for municipality users
+- Prevent direct route access to hidden sections
+- Redirect municipality users to allowed sections only
+
+STEP 4: Optimize Resource Loading
+- Update controllers and bindings to skip initialization for hidden sections
+- Modify dashboard_shell_controller to conditionally load resources
+- Ensure hidden sections don't make unnecessary API calls or consume memory
+
+STEP 5: Handle Deep Links and Navigation
+- Update navigation controller logic
+- Handle edge cases where municipality users try to access restricted routes
+- Provide proper fallback navigation
+
+IMPLEMENTATION DETAILS:
+----------------------
+
+1. MUNICIPALITY SERVICE:
+   ```dart
+   class MunicipalityService {
+     static bool isMunicipalityUser() {
+       final user = Get.find<AuthController>().userProfile.value;
+       return user?.userPartnersDepartments?.any(
+         (dept) => dept.department?.departmentType == "municipality"
+       ) ?? false;
+     }
+   }
+   ```
+
+2. SIDEBAR NAVIGATION MODIFICATION:
+   - Add conditional rendering based on municipality status
+   - Filter navigation items array before building UI
+   - Maintain clean code structure with separate methods
+
+3. ROUTE PROTECTION:
+   - Create MunicipalityMiddleware class
+   - Check department type on route access
+   - Redirect to allowed sections for municipality users
+
+4. RESOURCE OPTIMIZATION:
+   - Use lazy loading for hidden section controllers
+   - Skip API calls for inaccessible features
+   - Implement conditional binding initialization
+
+TESTING CONSIDERATIONS:
+----------------------
+- Test with municipality and non-municipality users
+- Verify direct route access is blocked
+- Check resource loading behavior
+- Test navigation state management
+- Validate UI consistency
+
+ROLLBACK PLAN:
+-------------
+- Implement feature flag for municipality restrictions
+- Allow easy toggle between restricted and full access
+- Maintain backward compatibility
+
+FILES TO MODIFY:
+---------------
+1. /lib/core/services/municipality_service.dart (NEW)
+2. /lib/core/widgets/sidebar_navigation.dart (MODIFY)
+3. /lib/core/app/app_pages.dart (MODIFY)
+4. /lib/features/dashboard_shell/presentation/controller/dashboard_shell_controller.impl.dart (MODIFY)
+5. /lib/core/middleware/municipality_middleware.dart (NEW)
+
+ESTIMATED EFFORT: 4-6 hours
+RISK LEVEL: Low-Medium (existing navigation system modification)
+TESTING REQUIRED: Unit tests + Integration tests for navigation flow
