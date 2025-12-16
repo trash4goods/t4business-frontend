@@ -5,6 +5,7 @@ import '../app/app_routes.dart';
 import '../app/constants.dart';
 import '../app/themes/app_colors.dart';
 import '../app/themes/app_text_styles.dart';
+import '../utils/municipality_utils.dart';
 
 class SidebarNavigation extends StatelessWidget {
   final String currentRoute;
@@ -131,64 +132,75 @@ class SidebarNavigation extends StatelessWidget {
   }
 
   Widget _buildNavigationItems() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 8 : 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!isCollapsed) ...[
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                child: Text(
-                  'Overview',
-                  style: TextStyle(
-                    fontFamily: AppTextStyles.fontFamily,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
-                    color: AppColors.mutedForeground,
-                    letterSpacing: 0.5,
+    return FutureBuilder<bool>(
+      future: MunicipalityUtils.isMunicipalityUser(),
+      builder: (context, snapshot) {
+        final isMunicipality = snapshot.data ?? false;
+        
+        return SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 8 : 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (!isCollapsed) ...[
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Text(
+                      'Overview',
+                      style: TextStyle(
+                        fontFamily: AppTextStyles.fontFamily,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: AppColors.mutedForeground,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
                   ),
+                ],
+                if (!isMunicipality) ...[
+                  _buildNavItem(
+                    icon: Icons.home_outlined,
+                    activeIcon: Icons.home,
+                    title: 'Dashboard',
+                    route: AppRoutes.dashboard,
+                  ),
+                  const SizedBox(height: 4),
+                  _buildNavItem(
+                    icon: Icons.recycling_outlined,
+                    activeIcon: Icons.recycling,
+                    title: 'Recycling Products',
+                    route: AppRoutes.productManagement,
+                  ),
+                  const SizedBox(height: 4),
+                ],
+                _buildNavItem(
+                  icon: Icons.storefront_outlined,
+                  activeIcon: Icons.storefront,
+                  title: 'Rewards',
+                  route: AppRoutes.rewards,
                 ),
-              ),
-            ],
-            _buildNavItem(
-              icon: Icons.home_outlined,
-              activeIcon: Icons.home,
-              title: 'Dashboard',
-              route: AppRoutes.dashboard,
+                const SizedBox(height: 4),
+                if (!isMunicipality) ...[
+                  _buildNavItem(
+                    icon: Icons.rule_folder_outlined,
+                    activeIcon: Icons.rule_folder,
+                    title: 'Rules',
+                    route: AppRoutes.rulesV2,
+                  ),
+                  const SizedBox(height: 4),
+                ],
+                _buildNavItem(
+                  icon: Icons.person_outline,
+                  activeIcon: Icons.person,
+                  title: 'Profile',
+                  route: AppRoutes.profile,
+                ),
+              ],
             ),
-            const SizedBox(height: 4),
-            _buildNavItem(
-              icon: Icons.recycling_outlined,
-              activeIcon: Icons.recycling,
-              title: 'Recycling Products',
-              route: AppRoutes.productManagement,
-            ),
-            const SizedBox(height: 4),
-            _buildNavItem(
-              icon: Icons.storefront_outlined,
-              activeIcon: Icons.storefront,
-              title: 'Rewards',
-              route: AppRoutes.rewards,
-            ),
-            const SizedBox(height: 4),
-            _buildNavItem(
-              icon: Icons.rule_folder_outlined,
-              activeIcon: Icons.rule_folder,
-              title: 'Rules',
-              route: AppRoutes.rulesV2,
-            ),
-            const SizedBox(height: 4),
-            _buildNavItem(
-              icon: Icons.person_outline,
-              activeIcon: Icons.person,
-              title: 'Profile',
-              route: AppRoutes.profile,
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

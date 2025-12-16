@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shadcn_ui/shadcn_ui.dart';
 import 'package:t4g_for_business/core/services/navigation.dart';
+import 'package:t4g_for_business/core/utils/municipality_utils.dart';
 import 'package:t4g_for_business/features/auth/data/datasources/auth_cache.dart';
 import 'package:t4g_for_business/utils/helpers/validators.dart';
 import '../../../../../core/app/app_routes.dart';
@@ -228,8 +229,14 @@ class LoginControllerImpl implements LoginControllerInterface {
   }
 
   @override
-  void navigateToDashboard() =>
+  void navigateToDashboard() async {
+    final isMunicipality = await MunicipalityUtils.isMunicipalityUser();
+    if (isMunicipality) {
+      NavigationService.offAll(AppRoutes.rewards);
+    } else {
       NavigationService.offAll(AppRoutes.dashboardShell);
+    }
+  }
 
   @override
   void navigateToResetPassword() =>
