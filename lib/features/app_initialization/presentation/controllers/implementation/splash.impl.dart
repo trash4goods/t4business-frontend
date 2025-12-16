@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:get/get.dart';
 
 import '../../../../../core/app/app_routes.dart';
+import '../../../../../core/utils/municipality_utils.dart';
 import '../../../../../core/services/auth_service.dart';
 import '../../../../../core/services/navigation.dart';
 import '../../../../../core/services/pending_task_service.dart';
@@ -56,8 +57,13 @@ class SplashControllerImpl implements SplashControllerInterface {
   }
 
   @override
-  void navigateToDashboard() {
-    NavigationService.offAll(AppRoutes.dashboard);
+  void navigateToDashboard() async {
+    final isMunicipality = await MunicipalityUtils.isMunicipalityUser();
+    if (isMunicipality) {
+      NavigationService.offAll(AppRoutes.rewards);
+    } else {
+      NavigationService.offAll(AppRoutes.dashboard);
+    }
   }
 
   /// Navigate authenticated users to the appropriate route based on pending tasks

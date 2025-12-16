@@ -1,104 +1,167 @@
-MUNICIPALITY NAVIGATION IMPLEMENTATION PLAN
-===========================================
+MUNICIPALITY NAVIGATION IMPLEMENTATION PLAN - PHASED APPROACH
+=============================================================
 
 OBJECTIVE:
-Hide dashboard, recycling products, and rules sections for users with department_type "municipality", 
-showing only rewards and profile sections, while ensuring hidden resources don't consume unnecessary resources.
+Phase 1: Hide dashboard, recycling products, and rules sections for municipality users
+Phase 2: Optimize resource consumption to prevent loading hidden sections
 
 CURRENT ARCHITECTURE ANALYSIS:
 ------------------------------
 1. UserProfileModel contains userPartnersDepartments (List<UserPartnersDepartmentModel>)
-2. UserPartnersDepartmentModel contains department (DepartmentModel)
-3. DepartmentModel contains departmentType (String) - this is our key field
-4. Navigation is implemented through:
-   - SidebarNavigation widget (/core/widgets/sidebar_navigation.dart)
-   - DashboardShell view (/features/dashboard_shell/presentation/view/dashboard_shell_view.dart)
-   - Routes defined in AppRoutes and AppPages
+2. UserPartnersDepartmentModel contains department (DepartmentModel)  
+3. DepartmentModel contains departmentType (String) - our key field
+4. Cached user access: "final cachedUser = await AuthCacheDataSource.instance.getUserAuth();"
+5. Navigation implemented through SidebarNavigation widget
 
-IMPLEMENTATION STRATEGY:
------------------------
+PHASE 1: HIDE FEATURES FOR MUNICIPALITY USERS
+=============================================
 
-STEP 1: Create Municipality Detection Service
-- File: /lib/core/services/municipality_service.dart
-- Purpose: Check if current user has department_type "municipality"
-- Method: getMunicipalityStatus() -> bool
-- Dependencies: AuthController to access UserProfileModel
+STEP 1: Create Municipality Detection Utility
+- File: /lib/core/utils/municipality_utils.dart
+- Purpose: Check if cached user has department_type "municipality"
+- Method: static Future<bool> isMunicipalityUser()
+- Implementation:
+  ```dart
+  class MunicipalityUtils {
+    static Future<bool> isMunicipalityUser() async {
+      final cachedUser = await AuthCacheDataSource.instance.getUserAuth();
+      return cachedUser?.profile?.userPartnersDepartments?.any(
+        (dept) => dept.department?.departmentType == "municipality"
+      ) ?? false;
+    }
+  }
+  ```
 
-STEP 2: Update Sidebar Navigation Logic
+STEP 2: Update SidebarNavigation Widget
 - File: /lib/core/widgets/sidebar_navigation.dart
-- Modify _buildNavigationItems() method
-- Add municipality check before adding dashboard, products, rules items
-- Keep only rewards and profile for municipality users
-- Ensure clean separation of navigation logic
+- Modify: _buildNavigationItems() method
+- Add: Municipality check before rendering nav items
+- Hide: Dashboard, Recycling Products, Rules for municipality users
+- Show: Only Rewards and Profile for municipality users
+- Implementation:
+  ```dart
+  Widget _buildNavigationItems() {
+    return FutureBuilder<bool>(
+      future: MunicipalityUtils.isMunicipalityUser(),
+      builder: (context, snapshot) {
+        final isMunicipality = snapshot.data ?? false;
+        
+        return Column(
+          children: [
+            if (!isMunicipality) _buildNavItem(...), // Dashboard
+            if (!isMunicipality) _buildNavItem(...), // Recycling Products  
+            _buildNavItem(...), // Rewards - always show
+            if (!isMunicipality) _buildNavItem(...), // Rules
+            _buildNavItem(...), // Profile - always show
+          ],
+        );
+      },
+    );
+  }
+  ```
 
-STEP 3: Update Route Access Control
-- File: /lib/core/app/app_pages.dart
-- Add middleware/guard for municipality users
-- Prevent direct route access to hidden sections
-- Redirect municipality users to allowed sections only
+STEP 3: Handle Direct Route Access
+- File: /lib/features/dashboard_shell/presentation/view/dashboard_shell_view.dart
+- Modify: onGenerateRoute logic
+- Add: Municipality check before allowing route access
+- Redirect: Municipality users trying to access hidden routes
+- Implementation:
+  ```dart
+  onGenerateRoute: (settings) async {
+    final isMunicipality = await MunicipalityUtils.isMunicipalityUser();
+    final restrictedRoutes = {
+      AppRoutes.dashboard,
+      AppRoutes.productManagement, 
+      AppRoutes.rulesV2
+    };
+    
+    if (isMunicipality && restrictedRoutes.contains(settings.name)) {
+      // Redirect to rewards page for municipality users
+      return GetPageRoute(
+        settings: RouteSettings(name: AppRoutes.rewards),
+        page: () => RewardsView(),
+        binding: RewardsBinding(),
+      );
+    }
+    
+    // Normal route handling for allowed routes
+    final page = sidebarPageRoute[settings.name];
+    final binding = sidebarPageBinding[settings.name];
+    return GetPageRoute(settings: settings, page: page, binding: binding);
+  }
+  ```
 
-STEP 4: Optimize Resource Loading
-- Update controllers and bindings to skip initialization for hidden sections
-- Modify dashboard_shell_controller to conditionally load resources
-- Ensure hidden sections don't make unnecessary API calls or consume memory
+STEP 4: Update Navigation Default Route
+- Update: Initial route logic for municipality users
+- Default: Redirect municipality users to Rewards instead of Dashboard
+- File: /lib/features/dashboard_shell/presentation/view/dashboard_shell_view.dart
+- Modify: Navigator initialRoute
 
-STEP 5: Handle Deep Links and Navigation
-- Update navigation controller logic
-- Handle edge cases where municipality users try to access restricted routes
-- Provide proper fallback navigation
+IMPLEMENTATION DETAILS - PHASE 1:
+---------------------------------
 
-IMPLEMENTATION DETAILS:
-----------------------
-
-1. MUNICIPALITY SERVICE:
+1. MUNICIPALITY UTILS:
    ```dart
-   class MunicipalityService {
-     static bool isMunicipalityUser() {
-       final user = Get.find<AuthController>().userProfile.value;
-       return user?.userPartnersDepartments?.any(
+   class MunicipalityUtils {
+     static Future<bool> isMunicipalityUser() async {
+       final cachedUser = await AuthCacheDataSource.instance.getUserAuth();
+       return cachedUser?.profile?.userPartnersDepartments?.any(
          (dept) => dept.department?.departmentType == "municipality"
        ) ?? false;
+     }
+     
+     static List<String> getAllowedRoutes() {
+       return [AppRoutes.rewards, AppRoutes.profile];
+     }
+     
+     static List<String> getRestrictedRoutes() {
+       return [AppRoutes.dashboard, AppRoutes.productManagement, AppRoutes.rulesV2];
      }
    }
    ```
 
 2. SIDEBAR NAVIGATION MODIFICATION:
-   - Add conditional rendering based on municipality status
-   - Filter navigation items array before building UI
-   - Maintain clean code structure with separate methods
+   - Use FutureBuilder to handle async municipality check
+   - Conditionally render navigation items based on user type
+   - Maintain clean separation of municipality vs normal user logic
 
 3. ROUTE PROTECTION:
-   - Create MunicipalityMiddleware class
-   - Check department type on route access
-   - Redirect to allowed sections for municipality users
+   - Check municipality status in onGenerateRoute
+   - Redirect restricted routes to allowed alternatives
+   - Provide fallback navigation for edge cases
 
-4. RESOURCE OPTIMIZATION:
-   - Use lazy loading for hidden section controllers
-   - Skip API calls for inaccessible features
-   - Implement conditional binding initialization
+4. DEFAULT ROUTE HANDLING:
+   - Set initial route based on user type
+   - Municipality users start at Rewards instead of Dashboard
 
-TESTING CONSIDERATIONS:
-----------------------
+TESTING CONSIDERATIONS - PHASE 1:
+---------------------------------
 - Test with municipality and non-municipality users
-- Verify direct route access is blocked
-- Check resource loading behavior
-- Test navigation state management
-- Validate UI consistency
+- Verify navigation items show/hide correctly  
+- Check direct URL access is blocked appropriately
+- Test navigation state persistence
+- Validate redirect behavior for restricted routes
+
+PHASE 2: RESOURCE OPTIMIZATION (FUTURE)
+=======================================
+- Conditional binding initialization
+- API call prevention for hidden sections  
+- Memory optimization for unused controllers
+- Lazy loading implementation
+- Performance monitoring
+
+FILES TO MODIFY - PHASE 1:
+--------------------------
+1. /lib/core/utils/municipality_utils.dart (NEW)
+2. /lib/core/widgets/sidebar_navigation.dart (MODIFY)
+3. /lib/features/dashboard_shell/presentation/view/dashboard_shell_view.dart (MODIFY)
+
+ESTIMATED EFFORT - PHASE 1: 2-3 hours
+RISK LEVEL: Low (UI-only changes, no backend dependencies)
+TESTING REQUIRED: Navigation flow testing with different user types
 
 ROLLBACK PLAN:
 -------------
-- Implement feature flag for municipality restrictions
-- Allow easy toggle between restricted and full access
-- Maintain backward compatibility
-
-FILES TO MODIFY:
----------------
-1. /lib/core/services/municipality_service.dart (NEW)
-2. /lib/core/widgets/sidebar_navigation.dart (MODIFY)
-3. /lib/core/app/app_pages.dart (MODIFY)
-4. /lib/features/dashboard_shell/presentation/controller/dashboard_shell_controller.impl.dart (MODIFY)
-5. /lib/core/middleware/municipality_middleware.dart (NEW)
-
-ESTIMATED EFFORT: 4-6 hours
-RISK LEVEL: Low-Medium (existing navigation system modification)
-TESTING REQUIRED: Unit tests + Integration tests for navigation flow
+- Feature flag for municipality restrictions
+- Easy toggle between restricted and full access
+- No breaking changes to existing functionality
