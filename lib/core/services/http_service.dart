@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:developer';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_translate/flutter_translate.dart';
 import 'package:http/http.dart' as http;
 import '../../features/auth/data/models/server_request.dart';
 import '../app/api_endpoints.dart';
@@ -270,7 +269,7 @@ class HttpService implements IHttp {
         // Maintenance
         if (context.mounted) {
           SnackbarServiceHelper.showInfo(
-            translate("error.maintenance.snackbar"),
+            "${serverResponse.response} - contact T4B team support",
             position: SnackPosition.BOTTOM,
             actionLabel: 'OK',
           );
