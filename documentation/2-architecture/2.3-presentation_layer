@@ -1,0 +1,26 @@
+PRESENTATION LAYER - UI & User Interaction (lib/features/*/presentation/)
+──────────────────────────────────────────────────────────────────────────
+Purpose: Handles UI rendering, user interaction, and presentation state
+
+Components:
+  • Views: Screens/pages that extend CustomGetView
+  • Controllers: Business logic orchestration (plain classes) -> create functions here only
+  • Presenters: Reactive state management (GetxController) -> create functions only necessary to be called on onInit and onClose or onDispose, presenters must include all the variables you need to be used in the view
+  • Bindings: Dependency injection setup -> create bindings for interface and implementation of the controller, presenter, usecase, repository and datasource
+
+Example Structure:
+  features/auth/presentation/
+    ├── views/
+    │   └── login.dart           
+    ├── controllers/
+    │   ├── interface/
+    │   │   └── login.controller.interface.dart
+    │   └── implementation/
+    │       └── login.controller.implementation.dart
+    ├── presenters/
+    │   ├── interface/
+    │   │   └── login.presenter.interface.dart
+    │   └── implementation/
+    │       └── login.presenter.implementation.dart
+    └── bindings/
+        └── login.dart

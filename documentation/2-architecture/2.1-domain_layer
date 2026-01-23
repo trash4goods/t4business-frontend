@@ -1,0 +1,60 @@
+DOMAIN LAYER - Business Logic (lib/features/*/domain/)
+─────────────────────────────────────────────────────
+Purpose: Contains pure business logic, independent of UI and external frameworks
+
+Components:
+  • Entities: Core business objects (e.g., UserEntity, RewardEntity) -> a copy of class or stand alone class that is used in the view directly
+  • Use Cases: Orchestrate business operations -> create local and remote functions here, the functions should call the respository
+
+Example Structure:
+  features/auth/domain/
+    ├── entities/
+    │   └── user.dart              
+    └── usecases/
+        ├── interface/
+        │   └── login.interface.dart       
+        └── implementation/
+            └── login.implementation.dart
+
+Real Example - Use Case Interface:
+  File: lib/features/auth/domain/usecases/interface/login.interface.dart
+
+  abstract class LoginUseCaseInterface {
+    Future<UserAuthModel?> login(String email, String password);
+    Future<bool> requestPasswordReset(String email);
+    Future<void> verifyEmail(String token);
+    Future<void> logout(String token);
+  }
+
+Real Example - Use Case Implementation:
+  File: lib/features/auth/domain/usecases/implementation/login.implementation.dart
+
+  class LoginUseCaseImpl implements LoginUseCaseInterface {
+    final LoginRepositoryInterface _repository;
+
+    LoginUseCaseImpl(this._repository);
+
+    @override
+    Future<UserAuthModel?> login(String email, String password) async {
+      try {
+        return await _repository.login(email, password);
+      } catch (e) {
+        throw Exception('Login failed: ${e.toString()}');
+      }
+    }
+
+    @override
+    Future<bool> requestPasswordReset(String email) async {
+      try {
+        await _repository.resetPassword(email);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    }
+  }
+
+Why This Matters:
+  ✓ Business logic is testable without UI or API dependencies
+  ✓ Can swap data sources (API → Firebase → Mock) without changing use cases
+  ✓ Use cases represent actual business operations

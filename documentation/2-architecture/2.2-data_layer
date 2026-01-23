@@ -1,0 +1,136 @@
+DATA LAYER - External Data Management (lib/features/*/data/)
+─────────────────────────────────────────────────────────────
+Purpose: Handles all external data operations (API, Firebase, local storage)
+
+Components:
+  • Models: Data transfer objects with JSON serialization -> class responsible to receive raw data from the local storage or any external remote source like API, Firebase  
+  • Datasources: Direct communication with APIs/Firebase -> in the local datasource, should include functions to handle local state/data, in the remote datasource, should include functions to handle remote data
+  • Repository: create local functions that would call local data source and remote functions would call remote data source
+
+Example Structure:
+  features/auth/data/
+    ├── models/
+    │   └── user_auth_model.dart
+    ├── datasources/
+    │   ├── interface/
+    │   │   └── login_remote_datasource.interface.dart
+    │   └── implementation/
+    │       └── login_remote_datasource.implementation.dart
+    └── repositories/
+        ├── interface/
+        │   └── login_repository.interface.dart
+        └── implementation/
+            └── login_repository.implementation.dart
+
+Real Example - Datasource Interface:
+  File: lib/features/auth/data/datasources/interface/login_remote_datasource.interface.dart
+
+  abstract class LoginRemoteDatasourceInterface {
+    Future<UserAuthModel?> signIn(String email, String password);
+    Future<void> verifyEmail(String token);
+    Future<void> forgotPassword(String email);
+    Future<void> logout(String token);
+  }
+
+Real Example - Datasource Implementation:
+  File: lib/features/auth/data/datasources/implementation/login_remote_datasource.implementation.dart
+
+  class LoginRemoteDatasourceImpl implements LoginRemoteDatasourceInterface {
+    IHttp http;
+    LoginRemoteDatasourceImpl(this.http);
+
+    @override
+    Future<UserAuthModel?> signIn(String email, String password) async {
+      final basicAuth =
+          'Basic ${base64.encode(utf8.encode('${email.trim()}:$password'))}';
+
+      final response = await http.requestHttp(
+        context: Get.context!,
+        method: APIMethod.post,
+        endpoint: ApiEndpoints.login,
+        headers: {'Authorization': basicAuth},
+        isDevEnv: true,
+      );
+
+      if (response.response != null) {
+        await LocalStorageHelper.saveString(
+          AppConstants.tokenKey,
+          response.response['result']['access_token'],
+        );
+      }
+
+      return response.response != null
+          ? UserAuthModel.fromJson(response.response['result'])
+          : null;
+    }
+  }
+
+Real Example - Repository Interface:
+  File: lib/features/auth/data/repositories/interface/login_repository.interface.dart
+
+  abstract class LoginRepositoryInterface {
+    Future<UserAuthModel?> login(String email, String password);
+    Future<void> resetPassword(String email);
+    Future<void> verifyEmail(String token);
+  }
+
+Real Example - Repository Implementation:
+  File: lib/features/auth/data/repositories/implementation/login_repository.implementation.dart
+
+  class LoginRepositoryImpl implements LoginRepositoryInterface {
+    final LoginRemoteDatasourceInterface _remoteDataSource;
+
+    LoginRepositoryImpl(this._remoteDataSource);
+
+    @override
+    Future<UserAuthModel?> login(String email, String password) async {
+      try {
+        final userAuth = await _remoteDataSource.signIn(email, password);
+        if (userAuth != null && userAuth.accessToken != null) {
+          return userAuth;
+        }
+        return null;
+      } catch (e) {
+        rethrow;
+      }
+    }
+  }
+
+Why This Matters:
+  ✓ Data layer handles all API/Firebase complexity
+  ✓ Repository pattern provides clean abstraction
+  ✓ Easy to mock for testing
+
+IMPORTANRT NOTE ABOUT BINDING: DEPENDENCY ORDER MATTERS
+Always register dependencies in this order:
+
+  1. Core Services (HTTP, Storage, Auth)
+  2. Datasources (depend on core services)
+  3. Repositories (depend on datasources)
+  4. Use Cases (depend on repositories)
+  5. Presenter (no dependencies, or minimal)
+  6. Controller (depends on use case + presenter)
+
+Why?
+  • Dependencies must be registered before they're accessed with Get.find()
+  • Controller needs Presenter, so Presenter must be registered first
+  • Use Case needs Repository, so Repository must be registered first
+
+COMMON PITFALLS
+───────────────
+✗ Forgetting fenix: true
+  → Dependency deleted after first use, crashes on re-access
+
+✗ Wrong registration order
+  → Get.find() throws error because dependency not registered yet
+
+✗ Using Get.put() everywhere
+  → All dependencies created immediately, wastes memory
+
+✗ Not using interfaces
+  → Hard-coded implementations, difficult to test/swap
+
+✓ Always use lazyPut with fenix: true
+✓ Register dependencies in correct order
+✓ Use interfaces for all registrations
+✓ Register Presenter before Controller

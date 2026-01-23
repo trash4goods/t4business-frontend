@@ -1,0 +1,30 @@
+Data Flow Example:
+
+  User clicks "Login" button
+         │
+         ▼
+  View calls businessController.onLoginButtonPressed()
+         │
+         ▼
+  Controller validates input via presenter
+         │
+         ▼
+  Controller calls useCase.execute(email, password)
+         │
+         ▼
+  UseCase calls repository.login(email, password)
+         │
+         ▼
+  Repository calls datasource.signIn(email, password)
+         │
+         ▼
+  Datasource makes HTTP request to API
+         │
+         ▼
+  Response flows back up: Datasource → Repository → UseCase → Controller
+         │
+         ▼
+  Controller updates presenter state (presenter.isLoading = false)
+         │
+         ▼
+  View reacts to state change via Obx() and shows result

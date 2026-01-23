@@ -1,0 +1,25 @@
+GENERAL OVERVIEW
+================
+
+Platform: T4G for Business - Created to help businesses manage their waste and reward their customers. 
+
+Tech Stack:
+  - Frontend: Flutter Web (Dart 3.7.2)
+  - Backend: Firebase (Authentication, Firestore, Storage)
+  - Server: Node.js/Express (for deployment)
+  - UI Framework: Material Design + ShadcN UI (for UI components)
+
+State Management: GetX (reactive state management with dependency injection)
+Local Storage: Hive (for offline-first capabilities and caching)
+
+Key Libraries:
+  - fl_chart (data visualization)
+  - pdf/printing (document generation)
+  - http (API communication)
+
+CI/CD & Deployment:
+  - Hosting: Firebase Hosting + Heroku (Node.js/Express server)
+  - CI/CD: GitHub Actions (automated deployment on push to main)
+  - Build: Flutter Web build with environment variable injection
+  - Auto-routing: Single-page application with client-side routing
+  - Deployment Process: Commit → Push → GitHub Actions auto-deploys

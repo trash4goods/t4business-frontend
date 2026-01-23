@@ -1,0 +1,86 @@
+═══════════════════════════════════════════════════════════════════════════════
+3. CUSTOMGETVIEW PATTERN
+═══════════════════════════════════════════════════════════════════════════════
+
+WHAT IS CUSTOMGETVIEW?
+─────────────────────────
+CustomGetView is a custom pattern that extends GetView to separate:
+  • Business Logic (Controller) - Plain Dart class
+  • Presentation State (Presenter) - GetxController with observables
+
+File: lib/core/app/custom_getview.dart
+
+  abstract class CustomGetView<Controller, Presenter extends GetxController>
+      extends GetView<Presenter> {
+    const CustomGetView({super.key});
+
+    // Access to business logic
+    Controller get businessController => Get.find<Controller>();
+
+    // Access to reactive state (inherited from GetView)
+    Presenter get presenter => controller;
+
+    @override
+    Widget build(BuildContext context) {
+      return buildView(context);
+    }
+
+    @protected
+    Widget buildView(BuildContext context);
+  }
+
+WHY USE CUSTOMGETVIEW?
+─────────────────────────
+Traditional GetView approach:
+  ✗ Business logic mixed with reactive state
+  ✗ Controllers become bloated with both concerns
+  ✗ Hard to test business logic independently
+
+CustomGetView approach:
+  ✓ Clear separation: businessController (logic) vs presenter (state)
+  ✓ Business logic is pure Dart (no GetxController dependency)
+  ✓ Presenter only manages UI state (loading, errors, form state)
+  ✓ Easier testing and maintenance
+
+
+REAL EXAMPLE: Login View
+─────────────────────────
+File: lib/features/auth/presentation/views/login.dart
+
+  class LoginView
+      extends CustomGetView<LoginControllerInterface, LoginPresenterInterface> {
+    const LoginView({super.key});
+
+    @override
+    Widget buildView(BuildContext context) {
+      return Scaffold(
+        body: GradientBackground(
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isWideScreen = constraints.maxWidth > 768;
+
+                if (isWideScreen) {
+                  return LoginWideScreenLayout(
+                    businessController: businessController,  // ← Business logic
+                    presenter: presenter,                    // ← UI state
+                  );
+                } else {
+                  return LoginMobileLayout(
+                    businessController: businessController,
+                    presenter: presenter,
+                  );
+                }
+              },
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
+Notice:
+  • View extends CustomGetView<LoginControllerInterface, LoginPresenterInterface>
+  • businessController provides methods like onLoginButtonPressed()
+  • presenter provides state like isLoading, isEmailValid
+  • Both are passed to child layouts for composition

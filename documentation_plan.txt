@@ -1,0 +1,191 @@
+T4G FOR BUSINESS - SOURCE CODE DOCUMENTATION PLAN
+====================================================
+
+GENERAL OVERVIEW
+================
+
+Platform: T4G for Business - Web-based waste management platform
+Tech Stack:
+  - Frontend: Flutter Web (Dart 3.7.2)
+  - Backend: Firebase (Authentication, Firestore, Storage)
+  - Server: Node.js/Express
+  - UI Framework: Material Design + ShadcN UI
+
+State Management: GetX (reactive state management with dependency injection)
+Local Storage: Hive (for offline-first capabilities and caching)
+
+Key Libraries:
+  - fl_chart (data visualization)
+  - pdf/printing (document generation)
+  - http (API communication)
+
+CI/CD & Deployment:
+  - Hosting: Firebase Hosting + Heroku (Node.js/Express server)
+  - CI/CD: GitHub Actions (automated deployment on push to main)
+  - Build: Flutter Web build with environment variable injection
+  - Auto-routing: Single-page application with client-side routing
+  - Deployment Process: Commit → Push → GitHub Actions auto-deploys
+
+DOCUMENTATION STRATEGY
+======================
+
+1. ARCHITECTURE DOCUMENTATION (Week 1)
+   - Document CustomGetView pattern with real examples
+   - Explain Controller vs Presenter separation
+   - Document dependency injection flow with GetX bindings
+   - Create visual diagrams of layer interactions
+   - Explain interface-implementation pattern usage
+
+2. FEATURE DOCUMENTATION (Week 2-3)
+   - Pick 1-2 complete features as reference examples
+   - Document each layer (domain → data → presentation)
+   - Show data flow from UI interaction to API call and back
+   - Highlight common patterns (error handling, loading states, navigation)
+   - Create step-by-step guide: "How to add a new feature"
+
+3. CODE-LEVEL DOCUMENTATION (Ongoing)
+   Priority order:
+   a) Core services (auth, navigation, HTTP, Hive local storage)
+   b) Shared utilities and helpers
+   c) Complex business logic in controllers
+   d) Reusable widgets and components
+   e) Data models and transformations
+
+4. COMMON PATTERNS GUIDE (Week 4)
+   - State management patterns
+   - Form validation patterns
+   - API integration patterns
+   - Local data persistence patterns (Hive)
+   - Navigation patterns
+   - Error handling patterns
+   - Testing patterns
+
+5. TROUBLESHOOTING GUIDE
+   - Common errors and solutions
+   - Build and deployment issues
+   - Testing setup problems
+   - Firebase configuration
+   - Hive initialization and TypeAdapter issues
+
+DOCUMENTATION FORMAT
+====================
+
+1. README.md Updates
+   - Keep high-level architecture overview
+   - Link to detailed documentation
+
+2. In-Code Documentation
+   - Add dartdoc comments (///) to public APIs
+   - Focus on WHY, not WHAT
+   - Include usage examples in complex classes
+   - Document non-obvious behaviors
+
+3. Separate Markdown Docs (docs/ folder)
+   - architecture.md - Detailed architecture explanation
+   - feature-guide.md - Step-by-step feature development
+   - patterns.md - Common code patterns with examples
+   - api-integration.md - HTTP service and API patterns
+   - data-persistence.md - Hive local storage setup and patterns
+   - testing.md - Testing strategies and examples
+
+4. Visual Aids
+   - Architecture diagrams (use mermaid.js in markdown)
+   - Data flow diagrams
+   - File structure trees
+
+DOCUMENTATION STANDARDS
+=======================
+
+For Classes:
+```dart
+/// Brief description of what this class does.
+///
+/// Detailed explanation of its role in the architecture.
+/// Mention which layer it belongs to.
+///
+/// Example:
+/// ```dart
+/// final controller = MyController();
+/// controller.doSomething();
+/// ```
+class MyClass { }
+```
+
+For Methods:
+```dart
+/// Brief description of what method does.
+///
+/// [param1] - Description of parameter
+/// Returns: Description of return value
+/// Throws: Exceptions that can be thrown
+Future<Result> myMethod(String param1) { }
+```
+
+For Complex Logic:
+- Add inline comments explaining business rules
+- Reference domain requirements when applicable
+- Explain non-obvious decisions
+
+For Hive Models & TypeAdapters:
+```dart
+/// Model for storing user preferences locally using Hive.
+///
+/// TypeAdapter ID: 0 (must be unique across all Hive models)
+/// Box name: 'userPreferences'
+///
+/// Example:
+/// ```dart
+/// final box = await Hive.openBox<UserPreferences>('userPreferences');
+/// await box.put('current', UserPreferences(theme: 'dark'));
+/// ```
+@HiveType(typeId: 0)
+class UserPreferences { }
+```
+
+RECOMMENDED TOOLS
+=================
+
+- dartdoc: Generate API documentation
+- Mermaid.js: Create diagrams in markdown
+- VS Code: Use "Document This" extensions
+- draw.io: For complex architecture diagrams
+
+DOCUMENTATION CHECKLIST
+=======================
+
+High Priority:
+□ CustomGetView pattern explained
+□ Feature development step-by-step guide
+□ Core services documented (AuthService, HttpService, NavigationService, Hive LocalStorage)
+□ Data persistence patterns (Hive setup, TypeAdapters, CRUD operations)
+□ Common patterns guide created
+□ One complete feature documented as reference
+
+Medium Priority:
+□ All public interfaces documented
+□ Repository pattern explained
+□ UseCase pattern explained
+□ Widget composition patterns
+□ Testing setup and examples
+
+Low Priority:
+□ All private methods documented
+□ Utility functions documented
+□ Legacy code notes
+□ Performance optimization notes
+
+MAINTENANCE
+===========
+
+- Update docs when patterns change
+- Add new patterns to patterns.md as they emerge
+- Keep examples up-to-date with latest Flutter/GetX versions
+- Review docs quarterly for accuracy
+
+METRICS FOR SUCCESS
+===================
+
+- Junior developer can create new feature independently
+- Code review comments focus on logic, not structure
+- New team members productive within 2 weeks
+- Reduced "how do I..." questions in team chats

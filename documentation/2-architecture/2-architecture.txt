@@ -1,0 +1,95 @@
+ARCHITECTURE DOCUMENTATION
+==========================
+
+═══════════════════════════════════════════════════════════════════════════════
+1. ARCHITECTURAL OVERVIEW
+═══════════════════════════════════════════════════════════════════════════════
+
+The application follows Clean Architecture principles with clear separation of concerns:
+
+PRESENTATION LAYER:
+ -> Views (UI Screens)
+ -> Controllers (Business Logic - create functions here only)
+ -> Presenters (State Management - create functions only necessary to be called on onInit and onClose or onDispose, presenters must include all the variables you need to be used in the view)
+ -> Bindings (Dependency Injection - create bindings for interface and implementation of the controller, presenter, usecase, repository and datasource)
+ -> Widgets (re-usable UI Components - create dynamic widgets that can be adjust and re-used anywhere possible)
+
+DOMAIN LAYER: 
+ -> Entities (Business Objects)
+ -> Use Cases (top layer of data layer)
+
+DATA LAYER: 
+ -> Models (Data Objects)
+ -> Repositories (Data Access Abstractions)
+ -> DataSources (API/Firebase)
+
+FOLDER STRUCTURE PATTERN
+────────────────────────
+  feature/
+    ├── data/
+    │   ├── datasources/
+    │   │   ├── interface/
+    │   │   │   └── feature_remote_datasource.interface.dart
+    │   │   └── implementation/
+    │   │       └── feature_remote_datasource.implementation.dart
+    │   └── repositories/
+    │       ├── interface/
+    │       │   └── feature_repository_interface.dart
+    │       └── implementation/
+    │           └── feature_repository.implementation.dart
+    ├── domain/
+    │   └── usecases/
+    │       ├── interface/
+    │       │   └── feature_usecase.interface.dart
+    │       └── implementation/
+    │           └── feature_usecase.implementation.dart
+    └── presentation/
+        ├── controllers/
+        │   ├── interface/
+        │   │   └── feature.controller.interface.dart
+        │   └── implementation/
+        │       └── feature.controller.implementation.dart
+        └── presenters/
+            ├── interface/
+            │   └── feature.presenter.interface.dart
+            └── implementation/
+                └── feature.presenter.implementation.dart
+
+(you can also opt to name with "_" instead of "." like feature_remote_datasource_interface.dart instead of feature_remote_datasource.interface.dart)
+
+WHEN TO USE INTERFACES
+──────────────────────
+Use interfaces for:
+  ✓ Controllers
+  ✓ Presenters
+  ✓ Use Cases
+  ✓ Repositories
+  ✓ Datasources
+  ✓ Services (HttpService, AuthService, etc.)
+
+Don't use interfaces for:
+  ✗ Models (data classes)
+  ✗ Entities (domain objects)
+  ✗ Views (UI screens)
+  ✗ Widgets (UI components)
+  ✗ Simple utilities
+
+═══════════════════════════════════════════════════════════════════════════════
+2. LAYER SEPARATION (Domain, Data, Presentation)
+═══════════════════════════════════════════════════════════════════════════════
+
+file: architecture/2.1-domain_layer
+file: architecture/2.2-data_layer
+file: architecture/2.3-presentation_layer
+
+═══════════════════════════════════════════════════════════════════════════════
+3. DATA FLOW
+═══════════════════════════════════════════════════════════════════════════════
+
+file: architecture/2.4-dataflow
+
+═══════════════════════════════════════════════════════════════════════════════
+4. CUSTOMGETVIEW PATTERN
+═══════════════════════════════════════════════════════════════════════════════
+
+file: architecture/2.5-customgetview

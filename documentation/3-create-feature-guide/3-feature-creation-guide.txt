@@ -1,0 +1,646 @@
+HOW TO CREATE A FEATURE
+========================
+
+This guide shows you how to create a complete feature using our architecture.
+We'll build a simple "Tasks" feature as an example.
+
+═══════════════════════════════════════════════════════════════════════════════
+OVERVIEW
+═══════════════════════════════════════════════════════════════════════════════
+
+Feature: Task Management
+Requirements:
+  - Display list of tasks
+  - Create new task
+  - Mark task as complete
+
+Steps:
+  1. Create folder structure
+  2. Create Model (data layer)
+  3. Create Datasource (data layer)
+  4. Create Repository (data layer)
+  5. Create UseCase (domain layer)
+  6. Create Presenter (presentation layer)
+  7. Create Controller (presentation layer)
+  8. Create View (presentation layer)
+  9. Create Binding (dependency injection)
+  10. Register route
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 1: CREATE FOLDER STRUCTURE
+═══════════════════════════════════════════════════════════════════════════════
+
+lib/features/tasks/
+  ├── data/
+  │   ├── models/
+  │   ├── datasources/
+  │   │   ├── interface/
+  │   │   └── implementation/
+  │   └── repositories/
+  │       ├── interface/
+  │       └── implementation/
+  ├── domain/
+  │   └── usecases/
+  │       ├── interface/
+  │       └── implementation/
+  └── presentation/
+      ├── bindings/
+      ├── controllers/
+      │   ├── interface/
+      │   └── implementation/
+      ├── presenters/
+      │   ├── interface/
+      │   └── implementation/
+      └── views/
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 2: CREATE MODEL (Data Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/data/models/task_model.dart
+
+Purpose: Represents task data, handles JSON serialization
+
+class TaskModel {
+  final String? id;
+  final String? title;
+  final bool? isCompleted;
+
+  TaskModel({this.id, this.title, this.isCompleted});
+
+  // Convert JSON to Model
+  factory TaskModel.fromJson(Map<String, dynamic> json) {
+    return TaskModel(
+      id: json['id'] as String?,
+      title: json['title'] as String?,
+      isCompleted: json['is_completed'] as bool?,
+    );
+  }
+
+  // Convert Model to JSON
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'title': title,
+      'is_completed': isCompleted,
+    };
+  }
+
+  // Convert to Entity (if necessary)
+  TaskEntity toEntity() => TaskEntity(
+    id: id,
+    title: title,
+    isCompleted: isCompleted,
+  );
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 3: CREATE DATASOURCE (Data Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/data/datasources/interface/tasks_remote_datasource.dart
+
+Purpose: Define contract for API calls
+
+abstract class TasksRemoteDatasourceInterface {
+  Future<List<TaskModel>> getAllTasks();
+  Future<TaskModel> createTask(TaskModel task);
+  Future<TaskModel> updateTask(String id, TaskModel task);
+}
+
+---
+
+File: lib/features/tasks/data/datasources/implementation/tasks_remote_datasource.dart
+
+Purpose: Make actual HTTP requests to API
+
+class TasksRemoteDatasourceImpl implements TasksRemoteDatasourceInterface {
+  final IHttp http;
+
+  TasksRemoteDatasourceImpl(this.http);
+
+  @override
+  Future<List<TaskModel>> getAllTasks() async {
+    final response = await http.requestHttp(
+      context: Get.context!,
+      method: APIMethod.get,
+      endpoint: ApiEndpoints.tasks,
+      isDevEnv: true,
+    );
+
+    if (response.response != null) {
+      final List<dynamic> data = response.response['result'] as List;
+      return data.map((json) => TaskModel.fromJson(json)).toList();
+    }
+    return [];
+  }
+
+  @override
+  Future<TaskModel> createTask(TaskModel task) async {
+    final response = await http.requestHttp(
+      context: Get.context!,
+      method: APIMethod.post,
+      endpoint: ApiEndpoints.tasks,
+      body: task.toJson(),
+      isDevEnv: true,
+    );
+    return TaskModel.fromJson(response.response['result']);
+  }
+
+  @override
+  Future<TaskModel> updateTask(String id, TaskModel task) async {
+    final response = await http.requestHttp(
+      context: Get.context!,
+      method: APIMethod.put,
+      endpoint: '${ApiEndpoints.tasks}/$id',
+      body: task.toJson(),
+      isDevEnv: true,
+    );
+    return TaskModel.fromJson(response.response['result']); // in case you want to return TaskEntity just .toEntity() at the end like "return TaskModel.fromJson(response.response['result']).toEntity();"
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 4: CREATE REPOSITORY (Data Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/data/repositories/interface/tasks_repository.dart
+
+Purpose: Define data access contract
+
+abstract class TasksRepositoryInterface {
+  Future<List<TaskModel>> getTasks();
+  Future<TaskModel> createTask(TaskModel task);
+  Future<TaskModel> updateTask(String id, TaskModel task);
+}
+
+---
+
+File: lib/features/tasks/data/repositories/implementation/tasks_repository.dart
+
+Purpose: Implement repository, delegates to datasource
+
+class TasksRepositoryImpl implements TasksRepositoryInterface {
+  final TasksRemoteDatasourceInterface _datasource;
+
+  TasksRepositoryImpl(this._datasource);
+
+  @override
+  Future<List<TaskModel>> getTasks() async {
+    try {
+      return await _datasource.getAllTasks();
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TaskModel> createTask(TaskModel task) async {
+    try {
+      return await _datasource.createTask(task);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<TaskModel> updateTask(String id, TaskModel task) async {
+    try {
+      return await _datasource.updateTask(id, task);
+    } catch (e) {
+      rethrow;
+    }
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 5: CREATE USECASE (Domain Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/domain/usecases/interface/get_tasks.dart
+
+Purpose: Define business operation contract
+
+abstract class GetTasksUseCaseInterface {
+  Future<List<TaskModel>> execute();
+}
+
+---
+
+File: lib/features/tasks/domain/usecases/implementation/get_tasks.dart
+
+Purpose: Implement business logic, calls repository
+
+class GetTasksUseCaseImpl implements GetTasksUseCaseInterface {
+  final TasksRepositoryInterface _repository;
+
+  GetTasksUseCaseImpl(this._repository);
+
+  @override
+  Future<List<TaskModel>> execute() async {
+    try {
+      return await _repository.getTasks();
+    } catch (e) {
+      throw Exception('Failed to fetch tasks: ${e.toString()}');
+    }
+  }
+}
+
+---
+
+File: lib/features/tasks/domain/usecases/interface/complete_task.dart
+
+Purpose: Business logic for completing a task
+
+abstract class CompleteTaskUseCaseInterface {
+  Future<TaskModel> execute(String id);
+}
+
+---
+
+File: lib/features/tasks/domain/usecases/implementation/complete_task.dart
+
+Purpose: Mark task as completed
+
+class CompleteTaskUseCaseImpl implements CompleteTaskUseCaseInterface {
+  final TasksRepositoryInterface _repository;
+
+  CompleteTaskUseCaseImpl(this._repository);
+
+  @override
+  Future<TaskModel> execute(String id) async {
+    try {
+      // Get current task and mark as completed
+      final updatedTask = TaskModel(id: id, isCompleted: true);
+      return await _repository.updateTask(id, updatedTask);
+    } catch (e) {
+      throw Exception('Failed to complete task: ${e.toString()}');
+    }
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 6: CREATE PRESENTER (Presentation Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/presentation/presenters/interface/tasks.presenter.dart
+
+Purpose: Define UI state contract
+
+abstract class TasksPresenterInterface extends GetxController {
+  bool get isLoading;
+  set isLoading(bool value);
+
+  List<TaskModel>? get tasks;
+  set tasks(List<TaskModel>? value);
+
+  TextEditingController get titleController;
+}
+
+---
+
+File: lib/features/tasks/presentation/presenters/implementation/tasks.presenter.dart
+
+Purpose: Manage UI state (loading, tasks list, form controllers)
+
+class TasksPresenterImpl extends TasksPresenterInterface {
+  final _isLoading = RxBool(false);
+  final _tasks = Rx<List<TaskModel>?>(null);
+
+  @override
+  bool get isLoading => _isLoading.value;
+  @override
+  set isLoading(bool value) => _isLoading.value = value;
+
+  @override
+  List<TaskModel>? get tasks => _tasks.value;
+  @override
+  set tasks(List<TaskModel>? value) => _tasks.value = value;
+
+  @override
+  TextEditingController titleController = TextEditingController();
+
+  @override
+  void onClose() {
+    titleController.dispose();
+    super.onClose();
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 7: CREATE CONTROLLER (Presentation Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/presentation/controllers/interface/tasks.controller.dart
+
+Purpose: Define business logic contract
+
+abstract class TasksControllerInterface {
+  Future<void> loadTasks();
+  Future<void> createTask(String title);
+  Future<void> completeTask(String id);
+  void showError(String message);
+  void showSuccess(String message);
+}
+
+---
+
+File: lib/features/tasks/presentation/controllers/implementation/tasks.controller.dart
+
+Purpose: Orchestrate business operations (load, create, complete tasks)
+
+class TasksControllerImpl implements TasksControllerInterface {
+  final GetTasksUseCaseInterface getTasksUseCase;
+  final CreateTaskUseCaseInterface createTaskUseCase;
+  final CompleteTaskUseCaseInterface completeTaskUseCase;
+  final TasksPresenterInterface presenter;
+
+  TasksControllerImpl({
+    required this.getTasksUseCase,
+    required this.createTaskUseCase,
+    required this.completeTaskUseCase,
+    required this.presenter,
+  });
+
+  @override
+  Future<void> loadTasks() async {
+    presenter.isLoading = true;
+    try {
+      final tasks = await getTasksUseCase.execute();
+      presenter.tasks = tasks;
+    } catch (e) {
+      showError(e.toString());
+    } finally {
+      presenter.isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> createTask(String title) async {
+    presenter.isLoading = true;
+    try {
+      await createTaskUseCase.execute(title);
+      await loadTasks(); // Reload list
+      presenter.titleController.clear();
+      showSuccess('Task created successfully');
+    } catch (e) {
+      showError(e.toString());
+    } finally {
+      presenter.isLoading = false;
+    }
+  }
+
+  @override
+  Future<void> completeTask(String id) async {
+    try {
+      await completeTaskUseCase.execute(id);
+      await loadTasks(); // Reload list
+      showSuccess('Task completed');
+    } catch (e) {
+      showError(e.toString());
+    }
+  }
+
+  @override
+  void showError(String message) {
+    Get.snackbar('Error', message, backgroundColor: Colors.red);
+  }
+
+  @override
+  void showSuccess(String message) {
+    Get.snackbar('Success', message, backgroundColor: Colors.green);
+  }
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 8: CREATE VIEW (Presentation Layer)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/presentation/views/tasks.dart
+
+Purpose: Display UI, handle user interactions
+
+class TasksView
+    extends CustomGetView<TasksControllerInterface, TasksPresenterInterface> {
+  const TasksView({super.key});
+
+  @override
+  Widget buildView(BuildContext context) {
+    // Load tasks when view opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      businessController.loadTasks();
+    });
+
+    return Scaffold(
+      appBar: AppBar(title: Text('Tasks')),
+      body: Column(
+        children: [
+          // Create task form
+          Padding(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: presenter.titleController,
+                    decoration: InputDecoration(labelText: 'Task title'),
+                  ),
+                ),
+                SizedBox(width: 8),
+                ElevatedButton(
+                  onPressed: () {
+                    final title = presenter.titleController.text;
+                    if (title.isNotEmpty) {
+                      businessController.createTask(title);
+                    }
+                  },
+                  child: Text('Add'),
+                ),
+              ],
+            ),
+          ),
+
+          // Tasks list
+          Expanded(
+            child: Obx(() {
+              if (presenter.isLoading) {
+                return Center(child: CircularProgressIndicator());
+              }
+
+              if (presenter.tasks == null || presenter.tasks!.isEmpty) {
+                return Center(child: Text('No tasks yet'));
+              }
+
+              return ListView.builder(
+                itemCount: presenter.tasks!.length,
+                itemBuilder: (context, index) {
+                  final task = presenter.tasks![index];
+                  return ListTile(
+                    title: Text(task.title ?? ''),
+                    trailing: Checkbox(
+                      value: task.isCompleted ?? false,
+                      onChanged: (_) {
+                        if (task.id != null) {
+                          businessController.completeTask(task.id!);
+                        }
+                      },
+                    ),
+                  );
+                },
+              );
+            }),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+Key Points:
+  • Extends CustomGetView<Controller, Presenter>
+  • businessController handles actions (loadTasks, createTask, completeTask)
+  • presenter provides state (isLoading, tasks, titleController)
+  • Obx() wraps reactive widgets to rebuild on state changes
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 9: CREATE BINDING (Dependency Injection)
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/features/tasks/presentation/bindings/tasks.dart
+
+Purpose: Register all dependencies in correct order
+
+class TasksBinding implements Bindings {
+  @override
+  void dependencies() {
+    // 1. HTTP Service
+    Get.lazyPut<IHttp>(() => HttpService(), fenix: true);
+
+    // 2. Datasource
+    Get.lazyPut<TasksRemoteDatasourceInterface>(
+      () => TasksRemoteDatasourceImpl(Get.find<IHttp>()),
+      fenix: true,
+    );
+
+    // 3. Repository
+    Get.lazyPut<TasksRepositoryInterface>(
+      () => TasksRepositoryImpl(Get.find<TasksRemoteDatasourceInterface>()),
+      fenix: true,
+    );
+
+    // 4. Use Cases
+    Get.lazyPut<GetTasksUseCaseInterface>(
+      () => GetTasksUseCaseImpl(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<CreateTaskUseCaseInterface>(
+      () => CreateTaskUseCaseImpl(Get.find()),
+      fenix: true,
+    );
+    Get.lazyPut<CompleteTaskUseCaseInterface>(
+      () => CompleteTaskUseCaseImpl(Get.find()),
+      fenix: true,
+    );
+
+    // 5. Presenter (MUST be registered before Controller)
+    Get.lazyPut<TasksPresenterInterface>(
+      () => TasksPresenterImpl(),
+      fenix: true,
+    );
+
+    // 6. Controller (depends on use cases + presenter)
+    Get.lazyPut<TasksControllerInterface>(
+      () => TasksControllerImpl(
+        getTasksUseCase: Get.find<GetTasksUseCaseInterface>(),
+        createTaskUseCase: Get.find<CreateTaskUseCaseInterface>(),
+        completeTaskUseCase: Get.find<CompleteTaskUseCaseInterface>(),
+        presenter: Get.find<TasksPresenterInterface>(),
+      ),
+      fenix: true,
+    );
+  }
+}
+
+Dependency Order:
+  HTTP → Datasource → Repository → UseCase → Presenter → Controller
+
+═══════════════════════════════════════════════════════════════════════════════
+STEP 10: REGISTER ROUTE
+═══════════════════════════════════════════════════════════════════════════════
+
+File: lib/core/app/app_routes.dart
+
+Add route constant:
+
+class AppRoutes {
+  static const String tasks = '/tasks';
+  // ... other routes
+}
+
+---
+
+File: lib/core/app/app_pages.dart
+
+Register route with binding:
+
+class AppPages {
+  static final List<GetPage> routes = [
+    // ... other routes
+
+    GetPage(
+      name: AppRoutes.tasks,
+      page: () => const TasksView(),
+      binding: TasksBinding(),
+    ),
+  ];
+}
+
+═══════════════════════════════════════════════════════════════════════════════
+SUMMARY: WHAT EACH FILE DOES
+═══════════════════════════════════════════════════════════════════════════════
+
+DATA LAYER (External Communication)
+────────────────────────────────────
+  Model           → Converts JSON to/from Dart objects
+  Datasource      → Makes HTTP requests to API
+  Repository      → Provides clean interface to data, delegates to datasource
+
+DOMAIN LAYER (Business Logic)
+──────────────────────────────
+  UseCase         → Orchestrates business operations, calls repository
+
+PRESENTATION LAYER (UI)
+───────────────────────
+  Presenter       → Manages UI state (loading, data, form controllers)
+  Controller      → Handles user actions, calls use cases, updates presenter
+  View            → Displays UI, reacts to presenter state changes
+  Binding         → Registers all dependencies
+
+FLOW SUMMARY
+────────────
+  User Action → View → Controller → UseCase → Repository → Datasource → API ---------
+                                                                                    │
+  UI Update ← View ← Presenter ← Controller ← UseCase ← Repository ← Datasource ────┘
+
+═══════════════════════════════════════════════════════════════════════════════
+QUICK CHECKLIST WHEN CREATING A FEATURE
+═══════════════════════════════════════════════════════════════════════════════
+
+□ Created folder structure (data/domain/presentation)
+□ Created Model with fromJson/toJson
+□ Created Datasource interface + implementation (API calls)
+□ Created Repository interface + implementation
+□ Created UseCase interface + implementation for each operation
+□ Created Presenter interface + implementation (UI state)
+□ Created Controller interface + implementation (business logic)
+□ Created View extending CustomGetView
+□ Created Binding (register dependencies in correct order)
+□ Registered route in app_routes.dart and app_pages.dart
+□ Tested the feature
+
+Remember:
+  ✓ Always use interfaces (not implementations) in dependencies
+  ✓ Register Presenter before Controller in Binding
+  ✓ Use lazyPut with fenix: true
+  ✓ Wrap reactive UI with Obx()
+  ✓ Controller has business logic, Presenter has UI state

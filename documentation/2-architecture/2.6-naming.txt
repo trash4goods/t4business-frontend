@@ -1,0 +1,19 @@
+NAMING CONVENTIONS
+──────────────────
+✓ Interface files end with base name
+  login.controller.interface.dart (interface)
+  login.interface.dart (interface)
+
+✓ Implementation files match interface name
+  login.controller.implementation.dart (implementation in implementation/ folder)
+  login.implementation.dart (implementation in implementation/ folder)
+
+✓ Interface classes end with "Interface"
+  LoginControllerInterface
+  LoginUseCaseInterface
+  LoginRepositoryInterface
+
+✓ Implementation classes end with "Impl"
+  LoginControllerImpl
+  LoginUseCaseImpl
+  LoginRepositoryImpl
