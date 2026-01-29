@@ -1,8 +1,15 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'barcode_pagination.dart';
 import 'barcode_result.dart';
 
+part 'barcode.g.dart';
+
+@HiveType(typeId: 11)
 class BarcodeModel {
+  @HiveField(0)
   final BarcodePaginationModel? pagination;
+  @HiveField(1)
   final List<BarcodeResultModel>? result;
 
   BarcodeModel({this.pagination, this.result});

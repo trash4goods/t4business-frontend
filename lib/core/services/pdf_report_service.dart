@@ -66,7 +66,7 @@ class PdfReportService {
       await _downloadPdf(pdfBytes, 'Dashboard_Report_${DateFormat('yyyy_MM_dd').format(now)}.pdf');
       
     } catch (e) {
-      print('Error generating PDF report: $e');
+      debugPrint('Error generating PDF report: $e');
       rethrow;
     }
   }

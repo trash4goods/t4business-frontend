@@ -20,9 +20,9 @@ mixin BrowserHistoryProtectionMixin on GetxController {
       final historyService = BrowserHistoryService.to;
       historyService.enableBackButtonProtection();
 
-      print('$runtimeType: Browser history protection enabled');
+      debugPrint('$runtimeType: Browser history protection enabled');
     } catch (e) {
-      print('$runtimeType: Failed to enable history protection: $e');
+      debugPrint('$runtimeType: Failed to enable history protection: $e');
     }
   }
 
@@ -40,9 +40,9 @@ mixin BrowserHistoryProtectionMixin on GetxController {
       final historyService = BrowserHistoryService.to;
       historyService.resetProtection();
 
-      print('$runtimeType: Browser history protection disabled');
+      debugPrint('$runtimeType: Browser history protection disabled');
     } catch (e) {
-      print('$runtimeType: Failed to disable history protection: $e');
+      debugPrint('$runtimeType: Failed to disable history protection: $e');
     }
   }
 }

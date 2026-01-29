@@ -1,11 +1,22 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'barcode_result_file_createdby.dart';
 
+part 'barcode_result_file.g.dart';
+
+@HiveType(typeId: 20)
 class BarcodeResultFileModel {
+  @HiveField(0)
   final BarcodeResultFileCreatedByModel? createdBy;
+  @HiveField(1)
   final String? fileName;
+  @HiveField(2)
   final int? id;
+  @HiveField(3)
   final String? mimeType;
+  @HiveField(4)
   final int? size;
+  @HiveField(5)
   String? url;
 
   BarcodeResultFileModel({

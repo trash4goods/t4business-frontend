@@ -1,8 +1,15 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'reward_pagination.dart';
 import 'reward_result.dart';
 
+part 'reward.g.dart';
+
+@HiveType(typeId: 17)
 class RewardModel {
+  @HiveField(0)
   final RewardPaginationModel? pagination;
+  @HiveField(1)
   final List<RewardResultModel>? result;
 
   RewardModel({

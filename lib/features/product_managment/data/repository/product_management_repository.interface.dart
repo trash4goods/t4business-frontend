@@ -8,10 +8,12 @@ abstract class ProductManagementRepositoryInterface {
   /// [token] - Bearer token for authentication
   /// [perPage] - Number of items per page (default: 10)
   /// [page] - Page number (default: 1)
+  /// [forceRefresh] - Force fresh data from API (bypass cache)
   Future<BarcodeModel> getProducts(
     String token, {
     int perPage = 10,
     int page = 1,
+    bool forceRefresh = false,
   });
 
   /// Create a new product

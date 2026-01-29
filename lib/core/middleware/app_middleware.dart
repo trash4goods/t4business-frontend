@@ -19,7 +19,7 @@ class AppMiddleware extends GetMiddleware {
       // Normalize route (remove any leading slashes and fragments)
       final normalizedRoute = _normalizeRoute(route);
 
-      print(
+      debugPrint(
         'AppMiddleware: Processing route "$route" (normalized: "$normalizedRoute"), authenticated: ${authService.isAuthenticated}',
       );
 
@@ -28,7 +28,7 @@ class AppMiddleware extends GetMiddleware {
       final currentUri = Uri.parse(Get.currentRoute);
       final requestedUri = Uri.parse(route ?? '');
 
-      print(
+      debugPrint(
         'AppMiddleware: Current URI: ${currentUri.path}, Requested URI: ${requestedUri.path}',
       );
 
@@ -53,7 +53,7 @@ class AppMiddleware extends GetMiddleware {
 
       // Allow splash route without restriction (it handles its own logic)
       if (normalizedRoute == AppRoutes.splash) {
-        print('AppMiddleware: Allowing access to splash route');
+        debugPrint('AppMiddleware: Allowing access to splash route');
         return null;
       }
 
@@ -68,7 +68,7 @@ class AppMiddleware extends GetMiddleware {
 
       // CRITICAL SECURITY CHECK: Protected routes
       if (isProtectedRoute && !authService.isAuthenticated) {
-        print(
+        debugPrint(
           'AppMiddleware: SECURITY VIOLATION - Blocking unauthenticated access to protected route $normalizedRoute',
         );
         return const RouteSettings(name: AppRoutes.login);
@@ -81,25 +81,25 @@ class AppMiddleware extends GetMiddleware {
           try {
             final pendingTaskService = Get.find<PendingTaskService>();
             final targetRoute = pendingTaskService.getAuthenticatedUserRoute(uid);
-            print(
+            debugPrint(
               'AppMiddleware: Redirecting authenticated user from guest route $normalizedRoute to $targetRoute',
             );
             return RouteSettings(name: targetRoute);
           } catch (e) {
-            print('AppMiddleware: PendingTaskService error: $e, defaulting to dashboard');
+            debugPrint('AppMiddleware: PendingTaskService error: $e, defaulting to dashboard');
             return const RouteSettings(name: AppRoutes.dashboardShell);
           }
         } else {
-          print('AppMiddleware: No user UID available, defaulting to dashboard');
+          debugPrint('AppMiddleware: No user UID available, defaulting to dashboard');
           return const RouteSettings(name: AppRoutes.dashboardShell);
         }
       }
 
-      print('AppMiddleware: Allowing access to route $normalizedRoute');
+      debugPrint('AppMiddleware: Allowing access to route $normalizedRoute');
       return null;
     } catch (e) {
       // If AuthService is not available, default to secure behavior
-      print(
+      debugPrint(
         'AppMiddleware: ERROR - AuthService not available ($e), defaulting to login',
       );
       return const RouteSettings(name: AppRoutes.login);

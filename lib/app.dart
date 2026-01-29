@@ -19,7 +19,7 @@ class App extends StatelessWidget {
           initialBinding: SplashBinding(),
           // SECURITY FIX: Handle direct URL access to protected routes
           routingCallback: (routing) {
-            print(
+            debugPrint(
               'App Routing: ${routing?.current} -> Previous: ${routing?.previous}',
             );
 
@@ -62,13 +62,13 @@ class App extends StatelessWidget {
     );
 
     if (isProtectedRoute) {
-      print('App: SECURITY CHECK - Direct access attempted to: $route');
+      debugPrint('App: SECURITY CHECK - Direct access attempted to: $route');
 
       // Check if user is authenticated
       try {
         final authService = Get.find<AuthService>();
         if (!authService.isAuthenticated) {
-          print(
+          debugPrint(
             'App: SECURITY BLOCK - Redirecting unauthenticated user to splash',
           );
           // Force redirect to splash for authentication check
@@ -77,7 +77,7 @@ class App extends StatelessWidget {
           });
         }
       } catch (e) {
-        print('App: AuthService not ready, forcing splash redirect');
+        debugPrint('App: AuthService not ready, forcing splash redirect');
         // If AuthService isn't ready, redirect to splash
         WidgetsBinding.instance.addPostFrameCallback((_) {
           Get.offAllNamed(AppRoutes.splash);

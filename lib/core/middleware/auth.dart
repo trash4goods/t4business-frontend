@@ -17,17 +17,17 @@ class AuthMiddleware extends GetMiddleware {
 
       // If user is not authenticated, redirect to login
       if (!authService.isAuthenticated) {
-        print(
+        debugPrint(
           'AuthMiddleware: User not authenticated, redirecting to login from $route',
         );
         return const RouteSettings(name: AppRoutes.login);
       }
 
-      print('AuthMiddleware: User authenticated, allowing access to $route');
+      debugPrint('AuthMiddleware: User authenticated, allowing access to $route');
       return null;
     } catch (e) {
       // If AuthService is not found, redirect to login as safety measure
-      print('AuthMiddleware: AuthService not found, redirecting to login');
+      debugPrint('AuthMiddleware: AuthService not found, redirecting to login');
       return const RouteSettings(name: AppRoutes.login);
     }
   }

@@ -10,6 +10,7 @@ abstract class ProductManagementUseCaseInterface {
   /// [token] - Bearer token for authentication
   /// [perPage] - Number of items per page (default: 10)
   /// [page] - Page number (default: 1)
+  /// [forceRefresh] - Force fresh data from API (bypass cache)
   ///
   /// Applies business logic to filter and process product data
   /// Throws [Exception] if operation fails
@@ -17,6 +18,7 @@ abstract class ProductManagementUseCaseInterface {
     String token, {
     int perPage = 10,
     int page = 1,
+    bool forceRefresh = false,
   });
 
   /// Create a new product with business logic processing

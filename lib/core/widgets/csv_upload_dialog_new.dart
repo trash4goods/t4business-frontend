@@ -360,8 +360,8 @@ class _CsvUploadDialogNewState extends State<CsvUploadDialogNew> {
         });
         
         if (kDebugMode) {
-          print('File selected: ${file.name}');
-          print('File size: ${file.size} bytes');
+          debugPrint('File selected: ${file.name}');
+          debugPrint('File size: ${file.size} bytes');
         }
       }
     } catch (e) {

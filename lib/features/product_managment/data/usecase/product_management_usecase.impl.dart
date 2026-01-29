@@ -20,10 +20,11 @@ class ProductManagementUseCaseImpl
     String token, {
     int perPage = 10,
     int page = 1,
+    bool forceRefresh = false,
   }) async {
     try {
       // Call repository to get products
-      return await repository.getProducts(token, perPage: perPage, page: page);
+      return await repository.getProducts(token, perPage: perPage, page: page, forceRefresh: forceRefresh);
     } catch (e) {
       throw Exception('Failed to get products: ${e.toString()}');
     }

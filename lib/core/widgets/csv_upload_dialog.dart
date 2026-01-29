@@ -185,11 +185,11 @@ class _CsvUploadDialogState extends State<CsvUploadDialog> {
         });
         
         if (kDebugMode) {
-          print('File selected: ${file.name}');
-          print('File size: ${file.size} bytes');
-          print('Has bytes: ${file.bytes != null}');
-          print('Has path: ${file.path != null}');
-          print('Platform is web: $kIsWeb');
+          debugPrint('File selected: ${file.name}');
+          debugPrint('File size: ${file.size} bytes');
+          debugPrint('Has bytes: ${file.bytes != null}');
+          debugPrint('Has path: ${file.path != null}');
+          debugPrint('Platform is web: $kIsWeb');
         }
       }
     } catch (e) {

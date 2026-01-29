@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import '../datasource/rules_remote_datasource.interface.dart';
+import '../datasources/local/rules_local_datasource.dart';
 import '../models/rules.dart';
 import '../models/rules_result.dart';
 import '../models/selection_result.dart';
@@ -20,7 +21,13 @@ class RulesV2RepositoryImpl implements RulesV2RepositoryInterface {
   @override
   Future<void> createRule(RulesResultModel rule, {String token = ''}) async {
     try {
-      return await remoteDataSource.createRule(rule, token: token);
+      final result = await remoteDataSource.createRule(rule, token: token);
+
+      // Invalidate cache after create
+      await RulesLocalDataSource.instance.clearCache();
+      log('[RulesV2RepositoryImpl] Cache invalidated after create');
+
+      return result;
     } catch (e) {
       log('[RulesV2RepositoryImpl] createRule error: $e');
       rethrow;
@@ -30,7 +37,13 @@ class RulesV2RepositoryImpl implements RulesV2RepositoryInterface {
   @override
   Future<void> deleteRule(int id, {String token = ''}) async {
     try {
-      return await remoteDataSource.deleteRule(id, token: token);
+      final result = await remoteDataSource.deleteRule(id, token: token);
+
+      // Invalidate cache after delete
+      await RulesLocalDataSource.instance.clearCache();
+      log('[RulesV2RepositoryImpl] Cache invalidated after delete');
+
+      return result;
     } catch (e) {
       log('[RulesV2RepositoryImpl] deleteRule error: $e');
       rethrow;
@@ -48,9 +61,36 @@ class RulesV2RepositoryImpl implements RulesV2RepositoryInterface {
   }
 
   @override
-  Future<RulesModel?> getRules({int perPage = 10, int page = 1, String search = '', String token = ''}) async {
+  Future<RulesModel?> getRules({int perPage = 10, int page = 1, String search = '', String token = '', bool forceRefresh = false}) async {
     try {
-      return await remoteDataSource.getRules(perPage: perPage, page: page, search: search, token: token);
+      // Note: Search queries bypass cache as they return dynamic results
+      // Only cache non-search queries
+      if (search.isEmpty && !forceRefresh) {
+        final cached = await RulesLocalDataSource.instance.getRules(
+          page: page,
+          perPage: perPage,
+        );
+
+        if (cached != null) {
+          log('[RulesV2RepositoryImpl] Returning cached data for page $page');
+          return cached;
+        }
+      }
+
+      // Fetch from API
+      log('[RulesV2RepositoryImpl] Fetching from API - page: $page, perPage: $perPage, search: $search');
+      final result = await remoteDataSource.getRules(perPage: perPage, page: page, search: search, token: token);
+
+      // Save to cache only if not a search query
+      if (result != null && search.isEmpty) {
+        await RulesLocalDataSource.instance.saveRules(
+          page: page,
+          perPage: perPage,
+          data: result,
+        );
+      }
+
+      return result;
     } catch (e) {
       log('[RulesV2RepositoryImpl] getRules error: $e');
       rethrow;
@@ -60,7 +100,13 @@ class RulesV2RepositoryImpl implements RulesV2RepositoryInterface {
   @override
   Future<void> updateRule(int id, RulesResultModel rule, {String token = ''}) async {
     try {
-      return await remoteDataSource.updateRule(id, rule, token: token);
+      final result = await remoteDataSource.updateRule(id, rule, token: token);
+
+      // Invalidate cache after update
+      await RulesLocalDataSource.instance.clearCache();
+      log('[RulesV2RepositoryImpl] Cache invalidated after update');
+
+      return result;
     } catch (e) {
       log('[RulesV2RepositoryImpl] updateRule error: $e');
       rethrow;

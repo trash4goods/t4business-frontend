@@ -1,6 +1,7 @@
 import 'dart:developer';
 import 'dart:typed_data';
 
+import '../datasource/local/product_local_datasource.dart';
 import '../datasource/remote/product_management_remote_datasource.interface.dart';
 import '../models/barcode/index.dart';
 import '../models/barcode_upload.dart';
@@ -17,10 +18,11 @@ class ProductManagementRepositoryImpl
     String token, {
     int perPage = 10,
     int page = 1,
+    bool forceRefresh = false,
   }) async {
     try {
       log(
-        '[ProductManagementRepositoryImpl] getProducts called with perPage: $perPage, page: $page',
+        '[ProductManagementRepositoryImpl] getProducts called with perPage: $perPage, page: $page, forceRefresh: $forceRefresh',
       );
 
       // Basic pagination parameter validation
@@ -31,10 +33,32 @@ class ProductManagementRepositoryImpl
         throw ArgumentError('page must be greater than 0');
       }
 
+      // CACHE LAYER (unless force refresh)
+      if (!forceRefresh) {
+        final cached = await ProductLocalDataSource.instance.getProducts(
+          page: page,
+          perPage: perPage,
+        );
+
+        if (cached != null) {
+          log('[ProductManagementRepositoryImpl] Returning cached data for page $page');
+          return cached;
+        }
+      }
+
+      // API LAYER
+      log('[ProductManagementRepositoryImpl] Fetching from API - page: $page, perPage: $perPage');
       final result = await remoteDatasource.getProducts(
         token,
         perPage: perPage,
         page: page,
+      );
+
+      // SAVE TO CACHE
+      await ProductLocalDataSource.instance.saveProducts(
+        page: page,
+        perPage: perPage,
+        data: result,
       );
 
       log(
@@ -58,6 +82,10 @@ class ProductManagementRepositoryImpl
       );
 
       final result = await remoteDatasource.createProduct(product, token);
+
+      // Invalidate cache after create
+      await ProductLocalDataSource.instance.clearCache();
+      log('[ProductManagementRepositoryImpl] Cache invalidated after create');
 
       log(
         '[ProductManagementRepositoryImpl] createProduct successful, id: ${result.id}',
@@ -85,6 +113,10 @@ class ProductManagementRepositoryImpl
 
       final result = await remoteDatasource.updateProduct(id, product, token);
 
+      // Invalidate cache after update
+      await ProductLocalDataSource.instance.clearCache();
+      log('[ProductManagementRepositoryImpl] Cache invalidated after update');
+
       log(
         '[ProductManagementRepositoryImpl] updateProduct successful, id: ${result.id}',
       );
@@ -106,6 +138,10 @@ class ProductManagementRepositoryImpl
       }
 
       await remoteDatasource.deleteProduct(id, token);
+
+      // Invalidate cache after delete
+      await ProductLocalDataSource.instance.clearCache();
+      log('[ProductManagementRepositoryImpl] Cache invalidated after delete');
 
       log(
         '[ProductManagementRepositoryImpl] deleteProduct successful for id: $id',

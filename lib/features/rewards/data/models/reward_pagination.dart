@@ -1,7 +1,16 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
+part 'reward_pagination.g.dart';
+
+@HiveType(typeId: 18)
 class RewardPaginationModel {
+  @HiveField(0)
   final int? count;
+  @HiveField(1)
   final bool? hasNext;
+  @HiveField(2)
   final int? page;
+  @HiveField(3)
   final int? perPage;
 
   RewardPaginationModel({this.count, this.hasNext, this.page, this.perPage});

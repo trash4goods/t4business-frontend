@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import '../../../../../core/services/snackbar.dart';
 import '../../presenters/scan_product_details_presenter.dart';
@@ -48,13 +49,13 @@ class MobilePreviewControllerImpl implements MobilePreviewControllerInterface {
   void onImageTapped(String? imageUrl) {
     if (imageUrl?.isNotEmpty == true) {
       // TODO: Implement full screen image view
-      print('Tapped image: $imageUrl');
+      debugPrint('Tapped image: $imageUrl');
     }
   }
 
   @override
   void onDefaultImageTapped() {
-    print('Tapped default image');
+    debugPrint('Tapped default image');
   }
 
   @override

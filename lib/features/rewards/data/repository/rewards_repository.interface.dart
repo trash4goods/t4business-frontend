@@ -10,6 +10,7 @@ abstract class RewardsRepositoryInterface {
     int page = 1,
     String search = '',
     String token = '',
+    bool forceRefresh = false,
   });
   Future<RewardResultModel?> getRewardById(int id, {String token = ''});
 

@@ -159,7 +159,7 @@ class ProductsControllerImpl extends GetxController
 
   // New API-based methods
   @override
-  Future<BarcodeModel> getProducts({int perPage = 10, int page = 1}) async {
+  Future<BarcodeModel> getProducts({int perPage = 10, int page = 1, bool forceRefresh = false}) async {
     _isLoading.value = true;
     _errorMessage.value = null;
 
@@ -169,6 +169,7 @@ class ProductsControllerImpl extends GetxController
         token,
         perPage: perPage,
         page: page,
+        forceRefresh: forceRefresh,
       );
 
       // Update pagination state

@@ -1,28 +1,52 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import '../../../../core/app/app_images.dart';
 import '../../../rules_v2/data/models/rules_result.dart';
 import 'reward_result_file.dart';
 import 'reward_upload_file.dart';
 
+part 'reward_result.g.dart';
+
+@HiveType(typeId: 19)
 class RewardResultModel {
+  @HiveField(0)
   final List<String>? categories;
+  @HiveField(1)
   final int? departmentId;
+  @HiveField(2)
   final String? description;
+  @HiveField(3)
   final DateTime? expiryDate;
+  @HiveField(4)
   final List<RewardResultFileModel>? files;
+  @HiveField(5)
   final int? id;
+  @HiveField(6)
   final String? name;
+  @HiveField(7)
   final int? quantity;
+  @HiveField(8)
   final String? specifications;
+  @HiveField(9)
   final String? status;
+  @HiveField(10)
   List<RewardUploadFileModel>? uploadFiles;
+  @HiveField(11)
   List<int>? deleteFiles; // ids of files to delete
+  @HiveField(12)
   String?
   removeAll; // "true" would remove all files. if new quantity value is less than the current quantity, this would be set to "true".
+  @HiveField(13)
   final int? addQuantity;
+  @HiveField(14)
   final String? productType;
+  @HiveField(15)
   final bool? isAdmin;
+  @HiveField(16)
   final List<RulesResultModel>? rules;
+  @HiveField(17)
   final List<int>? addRuleIds; //used when creating/editing
+  @HiveField(18)
   final List<int>? removeRuleIds; // used only when editing
   
 

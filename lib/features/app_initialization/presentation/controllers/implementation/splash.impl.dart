@@ -1,6 +1,7 @@
 // features/app_initialization/presentation/controllers/splash_controller_impl.dart
 import 'dart:developer';
 
+import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 
 import '../../../../../core/app/app_routes.dart';
@@ -79,18 +80,18 @@ class SplashControllerImpl implements SplashControllerInterface {
         final hasPendingTasks = await pendingTaskService.checkAndCachePendingTasks(uid);
         
         if (hasPendingTasks) {
-          print('SplashController: User has pending tasks, navigating to pending tasks');
+          debugPrint('SplashController: User has pending tasks, navigating to pending tasks');
           NavigationService.offAll(AppRoutes.pendingTasks);
         } else {
-          print('SplashController: No pending tasks, navigating to dashboard');
+          debugPrint('SplashController: No pending tasks, navigating to dashboard');
           navigateToDashboard();
         }
       } else {
-        print('SplashController: No user UID available, navigating to login');
+        debugPrint('SplashController: No user UID available, navigating to login');
         navigateToLogin();
       }
     } catch (e) {
-      print('SplashController: Error checking pending tasks: $e, defaulting to dashboard');
+      debugPrint('SplashController: Error checking pending tasks: $e, defaulting to dashboard');
       navigateToDashboard();
     }
   }
@@ -108,13 +109,13 @@ class SplashControllerImpl implements SplashControllerInterface {
     );
 
     if (isAccessingProtectedRoute) {
-      print(
+      debugPrint(
         'SplashController: SECURITY CHECK - User attempting direct access to protected route: $currentRoute',
       );
       // Force authentication check immediately for protected routes
       final isLoggedIn = await checkUserLoggedIn();
       if (!isLoggedIn) {
-        print(
+        debugPrint(
           'SplashController: SECURITY BLOCK - Redirecting unauthenticated user to login',
         );
         navigateToLogin();

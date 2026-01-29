@@ -17,19 +17,19 @@ class GuestMiddleware extends GetMiddleware {
 
       // If user is authenticated, redirect to dashboard
       if (authService.isAuthenticated) {
-        print(
+        debugPrint(
           'GuestMiddleware: User authenticated, redirecting to dashboard from $route',
         );
         return const RouteSettings(name: AppRoutes.dashboardShell);
       }
 
-      print(
+      debugPrint(
         'GuestMiddleware: User not authenticated, allowing access to $route',
       );
       return null;
     } catch (e) {
       // If AuthService is not found, allow access to guest routes
-      print(
+      debugPrint(
         'GuestMiddleware: AuthService not found, allowing access to $route',
       );
       return null;

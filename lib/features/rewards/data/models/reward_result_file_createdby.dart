@@ -1,5 +1,12 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
+part 'reward_result_file_createdby.g.dart';
+
+@HiveType(typeId: 23)
 class RewardResultFileCreatedByModel {
+  @HiveField(0)
   final int? id;
+  @HiveField(1)
   final String? name;
 
   RewardResultFileCreatedByModel({this.id, this.name});

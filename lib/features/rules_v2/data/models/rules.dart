@@ -1,8 +1,15 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'rules_pagination.dart';
 import 'rules_result.dart';
 
+part 'rules.g.dart';
+
+@HiveType(typeId: 14)
 class RulesModel {
+  @HiveField(0)
   final RulesPaginationModel? pagination;
+  @HiveField(1)
   final List<RulesResultModel>? result;
 
   RulesModel({

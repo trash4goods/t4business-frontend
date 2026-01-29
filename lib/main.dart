@@ -9,6 +9,9 @@ import 'package:t4g_for_business/features/auth/data/models/user_auth/department_
 import 'package:t4g_for_business/features/auth/data/models/user_auth/user_profile_full_roles.dart';
 import 'package:t4g_for_business/features/auth/data/models/user_auth/user_profile_partners_departments.dart';
 import 'package:t4g_for_business/features/auth/data/models/user_auth/user_statistics_model.dart';
+import 'package:t4g_for_business/features/product_managment/data/services/product_cache_service.dart';
+import 'package:t4g_for_business/features/rules_v2/data/services/rules_cache_service.dart';
+import 'package:t4g_for_business/features/rewards/data/services/rewards_cache_service.dart';
 import 'package:t4g_for_business/utils/helpers/web_env.dart';
 
 import 'app.dart';
@@ -27,25 +30,24 @@ import 'utils/helpers/local_storage.dart';
 import 'utils/url_strategy.dart';
 
 void main() async {
-  print("Initializing main()...");
+  debugPrint("Initializing main()...");
   WidgetsFlutterBinding.ensureInitialized();
   // Load environment variables
 
   await dotenv.load(fileName: ".env");
 
-  debugEnv();
   // Initialize Firebase
   // TEMPORARY: Debugging initialization issues
-  print("Initializing firebase...");
+  debugPrint("Initializing firebase...");
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Configure URL strategy to remove "#" from URLs (path-based routing)
   configureUrlStrategy();
 
-  print("Initializing Hive and local storage...");
+  debugPrint("Initializing Hive and local storage...");
   // Initialize Hive
   await Hive.initFlutter();
-  print("Hive initialized! Registering adapters...");
+  debugPrint("Hive initialized! Registering adapters...");
 
   // Register Hive adapters
   Hive.registerAdapter(UserAuthModelAdapter());
@@ -59,32 +61,44 @@ void main() async {
   Hive.registerAdapter(DepartmentModelAdapter());
   Hive.registerAdapter(DepartmentFileModelAdapter());
   Hive.registerAdapter(CreatedByModelAdapter());
-  print("Adapters registered for Hive and local storage...");
-  print("Initializing AuthCacheDataSource...");
+  debugPrint("Adapters registered for Hive and local storage...");
+  debugPrint("Initializing AuthCacheDataSource...");
   // init auth cache
   await AuthCacheDataSource.instance.init();
-  print("AuthCacheDataSource initialized! Initializing LocalStorageHelper...");
+  debugPrint("AuthCacheDataSource initialized!");
 
+  // Initialize feature caches
+  debugPrint("Initializing feature caches...");
+  await ProductCacheService.instance.initialize();
+  debugPrint("ProductCacheService initialized!");
+  await RulesCacheService.instance.initialize();
+  debugPrint("RulesCacheService initialized!");
+  await RewardsCacheService.instance.initialize();
+  debugPrint("RewardsCacheService initialized!");
+
+  debugPrint("Initializing LocalStorageHelper...");
   await LocalStorageHelper.init();
-  print("LocalStorageHelper initialized! Initializing AuthService...");
+  debugPrint("LocalStorageHelper initialized! Initializing AuthService...");
 
   await Get.putAsync(() => AuthService().init());
-  print("AuthService initialized!");
+  debugPrint("AuthService initialized!");
   // Initialize browser history service for back button control
-  print("Initializing BrowserHistoryService...");
+  debugPrint("Initializing BrowserHistoryService...");
   Get.put(BrowserHistoryService());
-  print("BrowserHistoryService initialized!");
+  debugPrint("BrowserHistoryService initialized!");
 
   // Initialize pending task service for route management
-  print("Initializing PendingTaskService...");
+  debugPrint("Initializing PendingTaskService...");
   Get.put(PendingTaskService());
-  print("PendingTaskService initialized!");
-  print("Starting the app...");
+  debugPrint("PendingTaskService initialized!");
+  debugPrint("Starting the app...");
+
+  debugEnv();
   runApp(const App());
 }
 
 void debugEnv() {
-  print("Debugging environment variables...");
+  debugPrint("Debugging environment variables...");
   for (final k in [
     'FIREBASE_API_KEY',
     'FIREBASE_APP_ID',
@@ -95,8 +109,8 @@ void debugEnv() {
     'FIREBASE_MEASUREMENT_ID',
     'API_BASE_DEV_URL',
   ]) {
-    print("Checking $k...");
-    final v = WebEnv.getEnv(k);
-    print('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
+    debugPrint("Checking $k...");
+    final v = dotenv.get(k);
+    debugPrint('$k = ${v.isEmpty ? "EMPTY" : "OK"}');
   }
 }

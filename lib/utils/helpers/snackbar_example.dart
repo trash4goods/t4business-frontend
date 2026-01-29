@@ -47,7 +47,7 @@ class SnackbarExampleHelper {
       actionLabel: 'Retry',
       onActionPressed: () {
         // Retry connection logic here
-        // print('Retrying connection...');
+        // debugPrint('Retrying connection...');
         // Show success after "retrying"
         SnackbarServiceHelper.showSuccess('Connection restored!');
       },
@@ -60,7 +60,7 @@ class SnackbarExampleHelper {
       'New message received. Tap to view.',
       onTap: () {
         // Navigate to message or perform action
-        // print('Snackbar tapped, navigating to message...');
+        // debugPrint('Snackbar tapped, navigating to message...');
         // Example navigation
         // Get.toNamed('/messages');
       },
@@ -82,7 +82,7 @@ class SnackbarExampleHelper {
       position: SnackPosition.TOP,
       actionLabel: 'Update Now',
       onActionPressed: () {
-        // print('Starting update process...');
+        // debugPrint('Starting update process...');
       },
     );
   }

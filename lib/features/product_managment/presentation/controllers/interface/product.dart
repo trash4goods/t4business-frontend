@@ -17,7 +17,7 @@ abstract class ProductsControllerInterface {
   List<BarcodeResultModel> get products;
 
   // API-based methods with pagination
-  Future<BarcodeModel> getProducts({int perPage = 10, int page = 1});
+  Future<BarcodeModel> getProducts({int perPage = 10, int page = 1, bool forceRefresh = false});
 
   Future<BarcodeResultModel?> getProductById(String id);
   Future<BarcodeResultModel> createProduct(BarcodeResultModel product);

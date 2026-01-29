@@ -8,6 +8,7 @@ import '../../../rules_v2/data/datasource/rules_remote_datasource.interface.dart
 import '../../../rules_v2/data/models/rules_result.dart';
 import '../../../rules_v2/data/models/selection_result.dart';
 import '../datasource/rewards_remote_datasource.interface.dart';
+import '../datasources/local/rewards_local_datasource.dart';
 import 'rewards_repository.interface.dart';
 
 class RewardsRepositoryImpl implements RewardsRepositoryInterface {
@@ -25,7 +26,13 @@ class RewardsRepositoryImpl implements RewardsRepositoryInterface {
     String token = '',
   }) async {
     try {
-      return await remoteDataSource.createReward(product, token: token);
+      final result = await remoteDataSource.createReward(product, token: token);
+
+      // Invalidate cache after create
+      await RewardsLocalDataSource.instance.clearCache();
+      log('[RewardsRepositoryImpl] Cache invalidated after create');
+
+      return result;
     } catch (e) {
       log('[RewardsRepositoryImpl] createReward error: $e');
       rethrow;
@@ -35,7 +42,13 @@ class RewardsRepositoryImpl implements RewardsRepositoryInterface {
   @override
   Future<void> deleteReward(int id, {String token = ''}) async {
     try {
-      return await remoteDataSource.deleteReward(id, token: token);
+      final result = await remoteDataSource.deleteReward(id, token: token);
+
+      // Invalidate cache after delete
+      await RewardsLocalDataSource.instance.clearCache();
+      log('[RewardsRepositoryImpl] Cache invalidated after delete');
+
+      return result;
     } catch (e) {
       log('[RewardsRepositoryImpl] deleteReward error: $e');
       rethrow;
@@ -58,14 +71,42 @@ class RewardsRepositoryImpl implements RewardsRepositoryInterface {
     int page = 1,
     String search = '',
     String token = '',
+    bool forceRefresh = false,
   }) async {
     try {
-      return await remoteDataSource.getRewards(
+      // Note: Search queries bypass cache as they return dynamic results
+      // Only cache non-search queries
+      if (search.isEmpty && !forceRefresh) {
+        final cached = await RewardsLocalDataSource.instance.getRewards(
+          page: page,
+          perPage: perPage,
+        );
+
+        if (cached != null) {
+          log('[RewardsRepositoryImpl] Returning cached data for page $page');
+          return cached;
+        }
+      }
+
+      // Fetch from API
+      log('[RewardsRepositoryImpl] Fetching from API - page: $page, perPage: $perPage, search: $search');
+      final result = await remoteDataSource.getRewards(
         perPage: perPage,
         page: page,
         search: search,
         token: token,
       );
+
+      // Save to cache only if not a search query
+      if (result != null && search.isEmpty) {
+        await RewardsLocalDataSource.instance.saveRewards(
+          page: page,
+          perPage: perPage,
+          data: result,
+        );
+      }
+
+      return result;
     } catch (e) {
       log('[RewardsRepositoryImpl] getRewards error: $e');
       rethrow;
@@ -79,7 +120,13 @@ class RewardsRepositoryImpl implements RewardsRepositoryInterface {
     String token = '',
   }) async {
     try {
-      return await remoteDataSource.updateReward(id, product, token: token);
+      final result = await remoteDataSource.updateReward(id, product, token: token);
+
+      // Invalidate cache after update
+      await RewardsLocalDataSource.instance.clearCache();
+      log('[RewardsRepositoryImpl] Cache invalidated after update');
+
+      return result;
     } catch (e) {
       log('[RewardsRepositoryImpl] updateReward error: $e');
       rethrow;

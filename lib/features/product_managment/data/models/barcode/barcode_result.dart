@@ -1,15 +1,30 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import 'barcode_result_file.dart';
 
+part 'barcode_result.g.dart';
+
+@HiveType(typeId: 13)
 class BarcodeResultModel {
+  @HiveField(0)
   final String? brand;
+  @HiveField(1)
   final double? co2Packaging;
+  @HiveField(2)
   final String? code;
+  @HiveField(3)
   final String? ecoGrade;
+  @HiveField(4)
   final List<BarcodeResultFileModel>? files;
+  @HiveField(5)
   int? id;
+  @HiveField(6)
   final String? instructions;
+  @HiveField(7)
   final String? mainMaterial;
+  @HiveField(8)
   String? name;
+  @HiveField(9)
   final String? trashType;
 
   BarcodeResultModel({

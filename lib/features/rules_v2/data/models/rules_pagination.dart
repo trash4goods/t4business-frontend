@@ -1,7 +1,16 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
+part 'rules_pagination.g.dart';
+
+@HiveType(typeId: 15)
 class RulesPaginationModel {
+  @HiveField(0)
   final int? count;
+  @HiveField(1)
   final bool? hasNext;
+  @HiveField(2)
   final int? page;
+  @HiveField(3)
   final int? perPage;
 
   RulesPaginationModel({this.count, this.hasNext, this.page, this.perPage});

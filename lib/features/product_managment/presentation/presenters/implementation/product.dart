@@ -16,6 +16,7 @@ import '../../../../auth/data/datasources/auth_cache.dart';
 import '../../../../auth/data/models/user_auth/user_auth_model.dart';
 import '../../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
 import '../../../data/models/barcode/index.dart';
+import '../../../data/datasource/local/product_local_datasource.dart';
 import '../../../utils/filename_extractor.dart';
 import '../../../../../utils/helpers/snackbar_service.dart';
 import '../../controllers/interface/product.dart';
@@ -389,12 +390,13 @@ class ProductsPresenterImpl extends GetxController
   }
 
   @override
-  Future<void> loadProducts() async {
+  Future<void> loadProducts({bool forceRefresh = false}) async {
     _isLoading.value = true;
     try {
       final result = await controller.getProducts(
         perPage: _perPage.value,
         page: _currentPage.value,
+        forceRefresh: forceRefresh,
       );
       
       // Update pagination state with safety checks
@@ -456,8 +458,27 @@ class ProductsPresenterImpl extends GetxController
   
   @override
   Future<void> refreshProducts() async {
-    _currentPage.value = 1;
-    await loadProducts();
+    try {
+      log('[ProductsPresenter] Starting refresh - clearing cache');
+      _isLoading.value = true;
+
+      // Clear cache first
+      await ProductLocalDataSource.instance.clearCache();
+      log('[ProductsPresenter] Cache cleared');
+
+      // Reset to first page
+      _currentPage.value = 1;
+
+      // Fetch fresh data with forceRefresh flag
+      await loadProducts(forceRefresh: true);
+
+      log('[ProductsPresenter] Refresh complete');
+    } catch (e) {
+      log('[ProductsPresenter] Refresh error: $e');
+      rethrow;
+    } finally {
+      _isLoading.value = false;
+    }
   }
 
   @override

@@ -1,48 +1,74 @@
+import 'package:hive_flutter/hive_flutter.dart';
+
 import '../../../product_managment/data/models/barcode/barcode_result.dart';
 import '../../../rewards/data/models/reward_result.dart';
 
+part 'rules_result.g.dart';
+
+@HiveType(typeId: 16)
 class RulesResultModel {
   // General
+  @HiveField(0)
   String? name;
+  @HiveField(1)
   String? status; // "active" or "inactive". by default active. field required
+  @HiveField(2)
   int?
   quantity; // how many items (barcodes) needed to recycle to trigger rule. field required
+  @HiveField(3)
   int?
   cooldownPeriod; // number of days for the rule to be available again for the same user after he triggered it, if none there is no cooldown. field not required
+  @HiveField(4)
   int?
   usageLimit; // how many times the same user can trigger this rule, if none is infinite. field not required
+  @HiveField(5)
   DateTime?
   expiryDate; // date to expire the rule, after this date the rule is no longer active. field not required
+  @HiveField(6)
   int? departmentId; // non-displayed
 
   // Get
+  @HiveField(7)
   int? id;
+  @HiveField(8)
   List<BarcodeResultModel>? barcodes;
+  @HiveField(9)
   List<RewardResultModel>? rewards;
 
   // Create
+  @HiveField(10)
   List<int>?
   productIds; // product ids to associate to this rule as rewards. the field is not required.
+  @HiveField(11)
   String?
   allProducts; // "False" by default. "False" or "True". if "True" associates all products owned by the user department to this rule. the field is not required.
+  @HiveField(12)
   List<int>?
   barcodeIds; // barcode ids to associate to this rule as items needed to recycle. the field is not required.
+  @HiveField(13)
   String?
   allBarcodes; // "False" by default. "False" or "True". if "True" associates all barcodes owned by the user department to this rule. the field is not required.
 
   // Edit
+  @HiveField(14)
   String?
   addAllProducts; // "False" by default. "False" or "True". if "True" associates all products owned by the user department to this rule
+  @HiveField(15)
   List<int>?
   addProductIds; // product ids to associate to this rule as rewards. field not required
+  @HiveField(16)
   String?
   addAllBarcodes; // "False" by default. "False" or "True". if "True" associates all barcodes owned by the user department to this rule
+  @HiveField(17)
   List<int>?
   addBarcodeIds; // list of barcode ids to add to this rule. the field is not required.
+  @HiveField(18)
   List<int>?
   removeProductIds; // list of product ids to remove from this rule. the field is not required.
+  @HiveField(19)
   List<int>?
   removeBarcodeIds; // list of barcode ids to remove from this rule. the field is not required.
+  @HiveField(20)
   String?
   removeAll; // "False" by default. "False" or "True". if "True" removes all barcodes and products from this rule. the field is not required.
 
