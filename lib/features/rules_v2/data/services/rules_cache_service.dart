@@ -1,8 +1,16 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:hive/hive.dart';
 
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:t4g_for_business/features/product_managment/data/models/barcode/barcode_result_file.dart';
+import 'package:t4g_for_business/features/rewards/data/models/reward_result.dart';
+import 'package:t4g_for_business/features/rewards/data/models/reward_result_file.dart';
+
+import '../../../product_managment/data/models/barcode/barcode_result.dart';
+import '../../../product_managment/data/models/barcode/barcode_result_file_createdby.dart';
+import '../../../rewards/data/models/reward_result_file_createdby.dart';
+import '../../../rewards/data/models/reward_upload_file.dart';
 import '../models/rules.dart';
 import '../models/rules_pagination.dart';
 import '../models/rules_result.dart';
@@ -18,7 +26,17 @@ class RulesCacheService {
 
   // Constants
   static const String boxName = 'rulesBox';
-  static const int hiveTypeId = 14;
+  static const int rulesTypeId = 14;
+  static const int rulesPaginationTypeId = 15;
+  static const int rulesResultTypeId = 16;
+  static const int rulesResultBarcodesResultTypeId = 13;
+  static const int rulesResultBarcodesResultFileTypeId = 20;
+  static const int rulesResultBarcodesResultFileCreatedByTypeId = 21;
+  static const int rulesResultRewardResultTypeId = 19;
+  static const int rulesResultRewardResultFileTypeId = 22;
+  static const int rulesResultRewardResultFileCreatedByTypeId = 23;
+  static const int rulesResultRewardResultUploadFileTypeId = 24;
+  static const int rulesResultRewardResultRulesResultTypeId = 19;
 
   // State management
   Box<dynamic>? _box;
@@ -46,13 +64,37 @@ class RulesCacheService {
       _initializationCompleter = Completer<void>();
 
       // Step 1: Register adapters if not already registered
-      if (!Hive.isAdapterRegistered(hiveTypeId)) {
+      if (!Hive.isAdapterRegistered(rulesTypeId)) {
         Hive.registerAdapter(RulesModelAdapter());
       }
-      if (!Hive.isAdapterRegistered(15)) {
+      if (!Hive.isAdapterRegistered(rulesPaginationTypeId)) {
         Hive.registerAdapter(RulesPaginationModelAdapter());
       }
-      if (!Hive.isAdapterRegistered(16)) {
+      if (!Hive.isAdapterRegistered(rulesResultTypeId)) {
+        Hive.registerAdapter(RulesResultModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultBarcodesResultTypeId)) {
+        Hive.registerAdapter(BarcodeResultModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultBarcodesResultFileTypeId)) {
+        Hive.registerAdapter(BarcodeResultFileModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultBarcodesResultFileCreatedByTypeId)) {
+        Hive.registerAdapter(BarcodeResultFileCreatedByModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultRewardResultTypeId)) {
+        Hive.registerAdapter(RewardResultModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultRewardResultFileTypeId)) {
+        Hive.registerAdapter(RewardResultFileModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultRewardResultFileCreatedByTypeId)) {
+        Hive.registerAdapter(RewardResultFileCreatedByModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultRewardResultUploadFileTypeId)) {
+        Hive.registerAdapter(RewardUploadFileModelAdapter());
+      }
+      if (!Hive.isAdapterRegistered(rulesResultRewardResultRulesResultTypeId)) {
         Hive.registerAdapter(RulesResultModelAdapter());
       }
 

@@ -150,6 +150,7 @@ class RewardsView
                               mode == ViewMode.grid ? 'grid' : 'list',
                             ),
                         onValidateReward: businessController.openValidationDialog,
+                        onRefreshPressed: () => presenter.refreshRewards(),
                       ),),
                   buildRewardsGrid: () {
                     return Obx(() {

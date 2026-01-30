@@ -8,6 +8,7 @@ import '../../../../../core/app/app_routes.dart';
 import '../../../../../utils/helpers/translate_api_text.dart';
 import '../../../../auth/data/datasources/auth_cache.dart';
 import '../../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
+import '../../../data/datasource/local/rewards_local_datasource.dart';
 import '../../../data/models/reward_result.dart';
 import '../../../data/models/reward_result_file.dart';
 import '../../../data/models/validate_reward.dart';
@@ -406,8 +407,34 @@ class RewardsPresenterImpl extends RewardsPresenterInterface
     _viewMode.value = (isMobileOrTablet ? 'list' : 'grid');
   }
 
+  /// Refreshes rewards by clearing cache and fetching fresh data
   @override
-  Future<void> loadRewards() async {
+  Future<void> refreshRewards() async {
+    try {
+      log('[RewardsPresenter] Starting refresh - clearing cache');
+      _isLoading.value = true;
+
+      // Clear cache first
+      await RewardsLocalDataSource.instance.clearCache();
+      log('[RewardsPresenter] Cache cleared');
+
+      // Reset to first page
+      _currentPage.value = 1;
+
+      // Fetch fresh data with forceRefresh flag
+      await loadRewards(forceRefresh: true);
+
+      log('[RewardsPresenter] Refresh complete');
+    } catch (e) {
+      log('[RewardsPresenter] Refresh error: $e');
+      rethrow;
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
+  @override
+  Future<void> loadRewards({bool forceRefresh = false}) async {
     try {
       _isLoading.value = true;
 
@@ -424,6 +451,7 @@ class RewardsPresenterImpl extends RewardsPresenterInterface
         page: _currentPage.value,
         perPage: _perPage.value,
         search: _searchQuery.value,
+        forceRefresh: forceRefresh,
       );
 
       if (result != null) {

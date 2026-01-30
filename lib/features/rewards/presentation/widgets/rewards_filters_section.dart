@@ -19,6 +19,7 @@ class RewardsViewFiltersSection extends StatelessWidget {
   final ValueChanged<String> onStatusFilterChanged;
   final List<String> statusFilters;
   final VoidCallback onValidateReward;
+  final VoidCallback onRefreshPressed;
 
   const RewardsViewFiltersSection({
     super.key,
@@ -34,6 +35,7 @@ class RewardsViewFiltersSection extends StatelessWidget {
     required this.onStatusFilterChanged,
     required this.statusFilters,
     required this.onValidateReward,
+    required this.onRefreshPressed,
   });
 
   @override
@@ -73,6 +75,8 @@ class RewardsViewFiltersSection extends StatelessWidget {
         const SizedBox(width: 12),
         Expanded(flex: 2, child: _buildValidateRewardButton()),
         const SizedBox(width: 12),
+        Expanded(flex: 2, child: _buildRefreshButton()),
+        const SizedBox(width: 12),
         ViewToggleButton(
           currentView: currentView,
           onViewChanged: onViewChanged,
@@ -103,8 +107,14 @@ class RewardsViewFiltersSection extends StatelessWidget {
             Expanded(flex: 2, child: _buildCategoryFilter()),
             const SizedBox(width: 4),
             Expanded(flex: 2, child: _buildStatusFilter()),
-            const SizedBox(width: 4),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
             Expanded(flex: 2, child: _buildValidateRewardButton()),
+            const SizedBox(width: 4),
+            Expanded(child: _buildRefreshButton()),
           ],
         ),
         /*const SizedBox(height: 12),
@@ -128,6 +138,8 @@ class RewardsViewFiltersSection extends StatelessWidget {
         Row(
           children: [
             Expanded(child: RewardViewSearchField(onChanged: onSearchChanged)),
+            const SizedBox(width: 4),
+            _buildMobileRefreshButton(),
             const SizedBox(width: 4),
             ViewToggleButton(
               currentView: currentView,
@@ -187,6 +199,27 @@ class RewardsViewFiltersSection extends StatelessWidget {
           Text('Validate Reward', style: TextStyle(fontSize: 12)),
         ],
       ),
+    );
+  }
+
+  Widget _buildRefreshButton() {
+    return ShadButton.outline(
+      onPressed: onRefreshPressed,
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.refresh, size: 16),
+          SizedBox(width: 6),
+          Text('Refresh', style: TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileRefreshButton() {
+    return ShadButton.outline(
+      onPressed: onRefreshPressed,
+      child: const Icon(Icons.refresh, size: 16),
     );
   }
 }

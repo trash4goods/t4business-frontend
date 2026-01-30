@@ -2,11 +2,11 @@ import 'dart:developer';
 
 import 'package:get/get.dart';
 
-import '../../../../core/app/api_endpoints.dart';
-import '../../../../core/app/api_method.dart';
-import '../../../../core/services/http_interface.dart';
-import '../models/rules.dart';
-import '../models/rules_result.dart';
+import '../../../../../core/app/api_endpoints.dart';
+import '../../../../../core/app/api_method.dart';
+import '../../../../../core/services/http_interface.dart';
+import '../../models/rules.dart';
+import '../../models/rules_result.dart';
 import 'rules_remote_datasource.interface.dart';
 
 class RulesV2RemoteDataSourceImpl implements RulesV2RemoteDataSourceInterface {

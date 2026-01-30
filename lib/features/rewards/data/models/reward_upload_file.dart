@@ -1,5 +1,14 @@
+
+
+import 'package:hive_flutter/hive_flutter.dart';
+
+part 'reward_upload_file.g.dart';
+
+@HiveType(typeId: 24)
 class RewardUploadFileModel {
+  @HiveField(0)
   final String? name;
+  @HiveField(1)
   final String? base64;
 
   RewardUploadFileModel({

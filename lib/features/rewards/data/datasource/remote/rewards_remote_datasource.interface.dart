@@ -1,6 +1,6 @@
-import '../models/reward.dart';
-import '../models/reward_result.dart';
-import '../models/validate_reward.dart';
+import '../../models/reward.dart';
+import '../../models/reward_result.dart';
+import '../../models/validate_reward.dart';
 
 abstract class RewardsRemoteDataSourceInterface {
   Future<RewardModel?> getRewards({

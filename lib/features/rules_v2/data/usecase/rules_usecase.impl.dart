@@ -44,9 +44,9 @@ class RulesV2UseCaseImpl implements RulesV2UseCaseInterface {
   }
 
   @override
-  Future<RulesModel?> getRules({int perPage = 10, int page = 1, String search = '', String token = ''}) async {
+  Future<RulesModel?> getRules({int perPage = 10, int page = 1, String search = '', String token = '', bool forceRefresh = false}) async {
     try {
-      return await repository.getRules(perPage: perPage, page: page, search: search, token: token);
+      return await repository.getRules(perPage: perPage, page: page, search: search, token: token, forceRefresh: forceRefresh);
     } catch (e) {
       log('[RulesV2UsecaseImpl] getRules error: $e');
       rethrow;

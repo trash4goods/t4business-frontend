@@ -41,6 +41,7 @@ class RulesV2View
                           onSearchChanged: businessController.searchRewards,
                           selectedFilter: presenter.selectedFilter,
                           onFilterChanged: businessController.onFilterChanged,
+                          onRefreshPressed: () => presenter.refreshRules(),
                           currentView:
                               presenter.viewMode == 'grid'
                                   ? ViewMode.grid

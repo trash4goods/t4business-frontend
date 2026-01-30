@@ -10,6 +10,7 @@ abstract class RulesV2UseCaseInterface {
     int page = 1,
     String search = '',
     String token = '',
+    bool forceRefresh = false,
   });
   Future<RulesResultModel?> getRuleById(int id, {String token = ''});
 

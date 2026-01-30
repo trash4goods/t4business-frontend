@@ -3,10 +3,10 @@ import 'package:t4g_for_business/core/services/http_service.dart';
 
 import '../../../../core/services/http_interface.dart';
 import '../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
-import '../../../rules_v2/data/datasource/rules_remote_datasource.impl.dart';
-import '../../../rules_v2/data/datasource/rules_remote_datasource.interface.dart';
-import '../../data/datasource/rewards_remote_datasource.impl.dart';
-import '../../data/datasource/rewards_remote_datasource.interface.dart';
+import '../../../rules_v2/data/datasource/remote/rules_remote_datasource.impl.dart';
+import '../../../rules_v2/data/datasource/remote/rules_remote_datasource.interface.dart';
+import '../../data/datasource/remote/rewards_remote_datasource.impl.dart';
+import '../../data/datasource/remote/rewards_remote_datasource.interface.dart';
 import '../../data/repository/rewards_repository.impl.dart';
 import '../../data/repository/rewards_repository.interface.dart';
 import '../../data/usecase/rewards_usecase.impl.dart';

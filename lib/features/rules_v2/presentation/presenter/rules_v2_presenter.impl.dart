@@ -6,6 +6,7 @@ import 'package:get/get.dart';
 import '../../../../core/app/app_routes.dart';
 import '../../../auth/data/datasources/auth_cache.dart';
 import '../../../dashboard_shell/presentation/controller/dashboard_shell_controller.interface.dart';
+import '../../data/datasource/local/rules_local_datasource.dart';
 import '../../data/models/rules_result.dart';
 import '../../data/usecase/rules_usecase.interface.dart';
 import '../../../rewards/data/models/reward_result.dart';
@@ -280,9 +281,35 @@ class RulesV2PresenterImpl extends RulesV2PresenterInterface {
         (isMobileOrTablet ? 'list' : 'list'); // for now set all default as list
   }
 
+  /// Refreshes rules by clearing cache and fetching fresh data
+  @override
+  Future<void> refreshRules() async {
+    try {
+      log('[RulesV2Presenter] Starting refresh - clearing cache');
+      _isLoading.value = true;
+
+      // Clear cache first
+      await RulesLocalDataSource.instance.clearCache();
+      log('[RulesV2Presenter] Cache cleared');
+
+      // Reset to first page
+      _currentPage.value = 1;
+
+      // Fetch fresh data with forceRefresh flag
+      await loadRules(forceRefresh: true);
+
+      log('[RulesV2Presenter] Refresh complete');
+    } catch (e) {
+      log('[RulesV2Presenter] Refresh error: $e');
+      rethrow;
+    } finally {
+      _isLoading.value = false;
+    }
+  }
+
   /// Loads rules from API following the rewards pattern
   @override
-  Future<void> loadRules() async {
+  Future<void> loadRules({bool forceRefresh = false}) async {
     try {
       _isLoading.value = true;
 
@@ -299,6 +326,7 @@ class RulesV2PresenterImpl extends RulesV2PresenterInterface {
         page: _currentPage.value,
         perPage: _perPage.value,
         search: _searchQuery.value,
+        forceRefresh: forceRefresh,
       );
 
       if (result != null) {

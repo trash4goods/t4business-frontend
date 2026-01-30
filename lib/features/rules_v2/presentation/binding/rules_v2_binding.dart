@@ -15,10 +15,10 @@ import '../../../dashboard_shell/presentation/presenter/dashboard_shell_presente
 import '../../../dashboard_shell/presentation/presenter/dashboard_shell_presenter.interface.dart';
 import '../../../product_managment/data/datasource/remote/product_management_remote_datasource.impl.dart';
 import '../../../product_managment/data/datasource/remote/product_management_remote_datasource.interface.dart';
-import '../../../rewards/data/datasource/rewards_remote_datasource.impl.dart';
-import '../../../rewards/data/datasource/rewards_remote_datasource.interface.dart';
-import '../../data/datasource/rules_remote_datasource.impl.dart';
-import '../../data/datasource/rules_remote_datasource.interface.dart';
+import '../../../rewards/data/datasource/remote/rewards_remote_datasource.impl.dart';
+import '../../../rewards/data/datasource/remote/rewards_remote_datasource.interface.dart';
+import '../../data/datasource/remote/rules_remote_datasource.impl.dart';
+import '../../data/datasource/remote/rules_remote_datasource.interface.dart';
 import '../../data/repository/rules_repository.impl.dart';
 import '../../data/repository/rules_repository.interface.dart';
 import '../../data/usecase/rules_usecase.impl.dart';

@@ -100,6 +100,7 @@ class ProductsListContainer extends StatelessWidget {
                 onFilterPressed: _showFilterDialog,
                 onSortPressed: _showSortDialog,
                 onUploadPressed: _showCsvUploadDialog,
+                onRefreshPressed: () => presenter.refreshProducts(),
                 currentView:
                     presenter.viewMode.value == 'grid'
                         ? ViewMode.grid

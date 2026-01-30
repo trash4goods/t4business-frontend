@@ -53,6 +53,7 @@ class RewardsUsecaseImpl implements RewardsUseCaseInterface {
     int page = 1,
     String search = '',
     String token = '',
+    bool forceRefresh = false,
   }) async {
     try {
       return await repository.getRewards(
@@ -60,6 +61,7 @@ class RewardsUsecaseImpl implements RewardsUseCaseInterface {
         page: page,
         search: search,
         token: token,
+        forceRefresh: forceRefresh,
       );
     } catch (e) {
       log('[RewardsRepositoryImpl] getRewards error: $e');

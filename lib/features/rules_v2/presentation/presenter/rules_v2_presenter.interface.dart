@@ -82,7 +82,8 @@ abstract class RulesV2PresenterInterface extends GetxController {
   bool get canSaveRule;
 
   // API methods
-  Future<void> loadRules();
+  Future<void> loadRules({bool forceRefresh = false});
+  Future<void> refreshRules();
   
   // Filter methods
   void applyFilters();

@@ -153,7 +153,8 @@ abstract class RewardsPresenterInterface extends GetxController {
   set validatedReward(ValidateRewardModel? value);
 
   // FUNCTIONS
-  Future<void> loadRewards();
+  Future<void> loadRewards({bool forceRefresh = false});
+  Future<void> refreshRewards();
   Future<void> loadAvailableRules();
   void resetValidationState();
 

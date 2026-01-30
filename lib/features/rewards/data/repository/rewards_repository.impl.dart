@@ -4,11 +4,12 @@ import 'package:t4g_for_business/features/rewards/data/models/reward.dart';
 import 'package:t4g_for_business/features/rewards/data/models/reward_result.dart';
 import 'package:t4g_for_business/features/rewards/data/models/validate_reward.dart';
 
-import '../../../rules_v2/data/datasource/rules_remote_datasource.interface.dart';
+import '../../../rules_v2/data/datasource/remote/rules_remote_datasource.interface.dart';
+import '../../../rules_v2/data/datasource/local/rules_local_datasource.dart';
 import '../../../rules_v2/data/models/rules_result.dart';
 import '../../../rules_v2/data/models/selection_result.dart';
-import '../datasource/rewards_remote_datasource.interface.dart';
-import '../datasources/local/rewards_local_datasource.dart';
+import '../datasource/remote/rewards_remote_datasource.interface.dart';
+import '../datasource/local/rewards_local_datasource.dart';
 import 'rewards_repository.interface.dart';
 
 class RewardsRepositoryImpl implements RewardsRepositoryInterface {
@@ -141,13 +142,47 @@ class RewardsRepositoryImpl implements RewardsRepositoryInterface {
     required String token,
   }) async {
     try {
+      // Use the same cache key structure as Rules page (page + perPage)
+      // This ensures that if user views Rules page (page 1, 20 items),
+      // then opens Rewards create dialog, the rules selection will use that cached data
+
+      // Check cache first if no search query
+      if (search.isEmpty) {
+        final cached = await RulesLocalDataSource.instance.getRules(
+          page: page,
+          perPage: pageSize,
+        );
+
+        if (cached != null) {
+          log('[RewardsRepositoryImpl] fetchRules - Using cached rules for page $page');
+          return SelectionResult<RulesResultModel>(
+            items: cached.result ?? [],
+            totalCount: cached.pagination?.count ?? 0,
+            hasMore: cached.pagination?.hasNext ?? false,
+            currentPage: page,
+          );
+        }
+      }
+
+      // Fetch from API
+      log('[RewardsRepositoryImpl] fetchRules - Fetching from API for page $page, search: $search');
       final result = await rulesRemoteDatasource.getRules(
         token: token,
         page: page,
         perPage: pageSize,
       );
 
-      // Filter by search if needed (since API might not support search)
+      // Cache the result using the same key structure as Rules page (only if no search)
+      if (result != null && search.isEmpty) {
+        await RulesLocalDataSource.instance.saveRules(
+          page: page,
+          perPage: pageSize,
+          data: result,
+        );
+        log('[RewardsRepositoryImpl] fetchRules - Cached rules for page $page');
+      }
+
+      // Filter by search if needed (client-side filtering)
       final filteredItems =
           search.isEmpty
               ? result?.result ?? []

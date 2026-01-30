@@ -14,6 +14,7 @@ class RulesV2ViewFiltersSection extends StatelessWidget {
   final String selectedStatusFilter;
   final ValueChanged<String> onStatusFilterChanged;
   final List<String> statusFilters;
+  final VoidCallback onRefreshPressed;
 
   const RulesV2ViewFiltersSection({
     super.key,
@@ -25,6 +26,7 @@ class RulesV2ViewFiltersSection extends StatelessWidget {
     required this.selectedStatusFilter,
     required this.onStatusFilterChanged,
     required this.statusFilters,
+    required this.onRefreshPressed,
   });
 
   @override
@@ -57,7 +59,9 @@ class RulesV2ViewFiltersSection extends StatelessWidget {
           child: RulesV2ViewSearchField(onChanged: onSearchChanged),
         ),
         const SizedBox(width: 12),
-        Expanded(flex: 2, child: _buildStatusFilter()),
+        Expanded(flex: 1, child: _buildStatusFilter()),
+        const SizedBox(width: 12),
+        Expanded(flex: 1, child: _buildRefreshButton()),
         const SizedBox(width: 12),
         ViewToggleButton(
           currentView: currentView,
@@ -87,6 +91,8 @@ class RulesV2ViewFiltersSection extends StatelessWidget {
         Row(
           children: [
             Expanded(flex: 2, child: _buildStatusFilter()),
+            const SizedBox(width: 12),
+            Expanded(child: _buildRefreshButton()),
           ],
         ),
       ],
@@ -99,6 +105,8 @@ class RulesV2ViewFiltersSection extends StatelessWidget {
         Row(
           children: [
             Expanded(child: RulesV2ViewSearchField(onChanged: onSearchChanged)),
+            const SizedBox(width: 4),
+            _buildMobileRefreshButton(),
             const SizedBox(width: 4),
             ViewToggleButton(
               currentView: currentView,
@@ -121,6 +129,27 @@ class RulesV2ViewFiltersSection extends StatelessWidget {
       selectedCategory: selectedStatusFilter,
       categories: statusFilters,
       onChanged: onStatusFilterChanged,
+    );
+  }
+
+  Widget _buildRefreshButton() {
+    return ShadButton.outline(
+      onPressed: onRefreshPressed,
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.refresh, size: 16),
+          SizedBox(width: 6),
+          Text('Refresh', style: TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileRefreshButton() {
+    return ShadButton.outline(
+      onPressed: onRefreshPressed,
+      child: const Icon(Icons.refresh, size: 16),
     );
   }
 }

@@ -1,5 +1,5 @@
-import '../models/rules.dart';
-import '../models/rules_result.dart';
+import '../../models/rules.dart';
+import '../../models/rules_result.dart';
 
 abstract class RulesV2RemoteDataSourceInterface {
   Future<RulesModel?> getRules({

@@ -11,6 +11,7 @@ class ProductFiltersSection extends StatelessWidget {
   final VoidCallback onFilterPressed;
   final VoidCallback onSortPressed;
   final VoidCallback onUploadPressed;
+  final VoidCallback onRefreshPressed;
   final ViewMode currentView;
   final ValueChanged<ViewMode> onViewChanged;
 
@@ -22,6 +23,7 @@ class ProductFiltersSection extends StatelessWidget {
     required this.onFilterPressed,
     required this.onSortPressed,
     required this.onUploadPressed,
+    required this.onRefreshPressed,
     required this.currentView,
     required this.onViewChanged,
   });
@@ -51,13 +53,13 @@ class ProductFiltersSection extends StatelessWidget {
   Widget _buildDesktopLayout() {
     return Row(
       children: [
-        Expanded(flex: 3, child: _buildSearchField()),
+        Expanded(flex: 2, child: _buildSearchField()),
         const SizedBox(width: 12),
-        Expanded(flex: 2, child: _buildCategoryFilter()),
+        Expanded(flex: 1, child: _buildCategoryFilter()),
         const SizedBox(width: 12),
-        SizedBox(width: 100, child: _buildCsvUploadButton()),
+        Expanded(flex: 1, child: _buildCsvUploadButton()),
         const SizedBox(width: 12),
-        SizedBox(width: 100, child: _buildFilterButton()),
+        Expanded(flex: 1, child: _buildRefreshButton()),
         const SizedBox(width: 12),
         _buildViewToggle(),
       ],
@@ -83,6 +85,8 @@ class ProductFiltersSection extends StatelessWidget {
             const SizedBox(width: 12),
             Expanded(child: _buildSortButton()),
             const SizedBox(width: 12),
+            Expanded(child: _buildRefreshButton()),
+            const SizedBox(width: 12),
             _buildViewToggle(),
           ],
         ),
@@ -100,6 +104,8 @@ class ProductFiltersSection extends StatelessWidget {
             Expanded(flex: 3, child: _buildCategoryFilter()),
             const SizedBox(width: 8),
             _buildMobileCsvUploadButton(),
+            const SizedBox(width: 8),
+            _buildMobileRefreshButton(),
           ],
         ),
         const SizedBox(height: 12),
@@ -180,6 +186,27 @@ class ProductFiltersSection extends StatelessWidget {
     return ShadButton.outline(
       onPressed: onUploadPressed,
       child: const Icon(Icons.upload_file, size: 16),
+    );
+  }
+
+  Widget _buildRefreshButton() {
+    return ShadButton.outline(
+      onPressed: onRefreshPressed,
+      child: const Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.refresh, size: 16),
+          SizedBox(width: 6),
+          Text('Refresh', style: TextStyle(fontSize: 12)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileRefreshButton() {
+    return ShadButton.outline(
+      onPressed: onRefreshPressed,
+      child: const Icon(Icons.refresh, size: 16),
     );
   }
 }

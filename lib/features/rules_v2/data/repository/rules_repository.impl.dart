@@ -1,12 +1,12 @@
 import 'dart:developer';
 
-import '../datasource/rules_remote_datasource.interface.dart';
-import '../datasources/local/rules_local_datasource.dart';
+import '../datasource/remote/rules_remote_datasource.interface.dart';
+import '../datasource/local/rules_local_datasource.dart';
 import '../models/rules.dart';
 import '../models/rules_result.dart';
 import '../models/selection_result.dart';
 import '../../../rewards/data/models/reward_result.dart';
-import '../../../rewards/data/datasource/rewards_remote_datasource.interface.dart';
+import '../../../rewards/data/datasource/remote/rewards_remote_datasource.interface.dart';
 import '../../../product_managment/data/models/barcode/barcode_result.dart';
 import '../../../product_managment/data/datasource/remote/product_management_remote_datasource.interface.dart';
 import 'rules_repository.interface.dart';

@@ -4,10 +4,10 @@ import 'package:get/get.dart';
 import 'package:t4g_for_business/features/rewards/data/models/reward.dart';
 import 'package:t4g_for_business/features/rewards/data/models/validate_reward.dart';
 
-import '../../../../core/app/api_endpoints.dart';
-import '../../../../core/app/api_method.dart';
-import '../../../../core/services/http_interface.dart';
-import '../models/reward_result.dart';
+import '../../../../../core/app/api_endpoints.dart';
+import '../../../../../core/app/api_method.dart';
+import '../../../../../core/services/http_interface.dart';
+import '../../models/reward_result.dart';
 import 'rewards_remote_datasource.interface.dart';
 
 class RewardsRemoteDataSourceImpl implements RewardsRemoteDataSourceInterface {
